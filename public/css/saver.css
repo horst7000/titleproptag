@@ -1,0 +1,63 @@
+#btn-save {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    right: 5vw;
+    background-image: url(../img/save.png);
+    background-repeat: round;
+    cursor: pointer;
+    user-select: none;
+}
+#btn-save:hover {
+    transform:rotateY(-0.1turn);
+}
+
+.dialogue {
+    padding: 15px;
+    position: fixed;
+    width: 100%;
+    z-index: 11;
+    background-color: white;
+    opacity: 95%;
+    font-family: 'Catamaran', sans-serif;
+}
+.dialogue form{
+    display: inline;
+}
+.dialogue-header {
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-close {
+    cursor: pointer;
+    border: none;
+    outline: none;
+    background: none;
+    font-size: 1.25rem;
+    font-weight: bold;
+  }
+  
+.btn-dialogue {
+    border: 2px solid #a9dae6;
+    border-top: none;
+    border-left: none;
+    border-radius: 3px;
+
+    cursor: pointer;
+    outline: none;
+    background: #b9dfe4;
+    font-size: 1rem;
+    margin-top: 10px;
+    margin-right: 3px;
+}
+  
+#dialogue-save-id {
+    color: grey;
+}
+
+.hidden {
+    display: none;
+}

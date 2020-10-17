@@ -1,0 +1,30 @@
+html
+    head
+        title= doc[0].title
+        meta(name='viewport' content='width=device-width, initial-scale=1')
+        link(rel='stylesheet' href='/css/my.css')
+        link(rel='stylesheet' href='/css/saver.css')
+        link(href="https://fonts.googleapis.com/css2?family=Catamaran&display=swap" rel="stylesheet")
+    body
+        img(src="/img/save.png", alt="diskette", draggable="false")#btn-save
+        
+        div.boxes
+            for box in doc
+                div(data-id=box._id).box#box1
+                    h1.title(contenteditable = "true")= box.title
+                    div.tags
+                        span.tag tag1
+                        span.tag tag2
+                    
+                    div.props
+                        for prop in box.props
+                            div.prop
+                                p(contenteditable = "true")= prop.name
+                                div.boxes
+                                    for boxid in prop.boxids
+                                        div.box.boxsmall(data-id=boxid)
+                                            h1.title(contenteditable = "true")= boxid
+
+        h1#addbox +
+
+        script(type='module' src='/js/main.js')

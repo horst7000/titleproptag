@@ -1,0 +1,61 @@
+html
+    head
+        title Mathekarte
+        meta(name='viewport' content='width=device-width, initial-scale=1')
+        link(rel='stylesheet' href='/css/my.css')
+        link(rel='stylesheet' href='/css/saver.css')
+        link(href="https://fonts.googleapis.com/css2?family=Catamaran&display=swap" rel="stylesheet")
+    body
+        div.dialogue.hidden#dialogue-save
+            div.dialogue-header
+                h1 save
+                button.btn-close#dialogue-save-btn-close &times;
+            p your notes will be available at
+            form(action="javascript: saveForm()")
+                label mathekarte.de/
+                input(
+                    pattern="[A-Za-z0-9]{4}"
+                    type="text"
+                    title="exactly 4 letters"
+                    maxlength="4"
+                    size="2"
+                    autocomplete="off"
+                    required
+                )#dialogue-save-inp-name
+                span#dialogue-save-post-id idid
+                br
+                br
+                input(type="submit" value="save").btn-dialogue
+                button(onclick="return false").btn-dialogue#dialogue-save-btn-cancel cancel
+
+        img(src="/img/save.png", alt="diskette", draggable="false")#btn-save
+        
+        div.boxes
+            div.box#box1
+                    h1.title(contenteditable = "true") Einkaufsliste
+                    div.tags
+                        span.tag tag1
+                        span.tag tag2
+
+                    div.props
+                        div.prop
+                            p(contenteditable = "true") Obst & Gemüse
+                            div.boxes
+                                div.box.boxsmall
+                                    h1.title(contenteditable = "true") Gurke
+                                div.box.boxsmall
+                                    h1.title(contenteditable = "true") Trauben
+                        
+                        div.prop 
+                            p(contenteditable = "true") Anderes
+                            div.boxes
+                                div.box.boxsmall
+                                    h1.title(contenteditable = "true") Brötchen
+                    h1.addprop +
+
+            div.box#box2
+                h1.title(contenteditable = "true") Bäume
+
+        h1#addbox +
+
+        script(type='module' src='/js/main.js')
