@@ -69,7 +69,7 @@ window.addEventListener('keydown', (e) => {
             let titleEl = e.target;
             let boxEl   = titleEl.parentNode;       
             let box     = boxmgr.getBox(boxEl.dataset.id || boxEl.dataset.tmpid)
-            box.addButtonEvent();
+            box.onAddButtonClick();
         }
     }
 })
