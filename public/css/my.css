@@ -2,7 +2,7 @@ body {
     margin: 0;
     height: 100%;
     font-family: 'Catamaran', sans-serif;
-    background-color: #eee;
+    background-color: #f2f2f2;
 }
 
 .json {
@@ -30,27 +30,32 @@ button {
 *   B O X
 */
 .box {
-    /* border: 2px solid #a9dae6; */
-    border: 2px solid #8d9feb;
-    border-top: none;
-    border-right: none;
-    border-left: none;
-    border-radius: 3px;
+    border-radius: 7px;
+    border-bottom: 2px solid #8d9feb;
 
-    /* background: #b9dfe4; */
     background: #3770db;
     color: white;
 
     padding: 10px;
+    margin: 0 auto;
     margin-bottom: 10px;
 
+    max-width: 1600px;
     position: relative; /* for btn position absolute */
+    
+    transition: all          0.3s linear,
+                background   0.5s ease-in-out 0.52s,
+                color        0.5s ease-in-out 0.52s,
+                border-color 0.5s ease-in-out 0.52s,         
+                border-width 0.2s ease-in-out;
 }
 .ontop-box.box {
-    background: white;
-    color: black;
+    border-top: 2px solid #667;
+    border-bottom: none;
+    background: #f2f2f2;
+    color: #667;
     padding: unset;
-    border: unset;
+    width: 100%;
 }
 .prop-box.box {
     border-color: #33a;
@@ -75,6 +80,8 @@ button {
     color: #888
 }
 .box.selected{
+    border-style: solid;
+    border-width: 3px 0px;
     border-color: black;
     z-index: 1;
 }
@@ -85,6 +92,7 @@ button {
 .title {
     min-height: 27px; /* 16px font height */
     font-size: 30px;
+    margin: 0;
 }
 .default-box .title {
     font-weight: 400;
@@ -114,6 +122,8 @@ button {
 } */
 
 .tag {
+    display: none;
+    
     border: 2px solid #bcbcbc;
     border-radius: 10px;
 
@@ -124,7 +134,6 @@ button {
 
     padding: 0px 5px; /* top+bottom left+right */
     margin-right: 3px;
-    /* margin-bottom: 30px; */
 }
 .prop-box .tag {
     border-width: 1px;
@@ -143,26 +152,34 @@ button {
 *   A D D    P R O P S   B U T T O N
 */
 .addprop {
+    color: #999;
+    opacity: 0.5;
     cursor: pointer;
-    width: 0;
+    text-align: center;
 }
 .ontop-box .addprop {
-    color: black;
+    /* color: black; */
     font-weight: 700;
     font-size: 45px;
-    margin: 0 auto; /* center */
+    line-height: 25px;
+    max-width: 42vw;
+    margin: 0px auto;
 }
 .default-box .addprop {
-    color: white;
+    border: 3px solid #bbb;
+    border-radius: 7px;
+    /* color: #bbb; */
     font-size: 20pt;
     font-weight: unset;
+    line-height: 55px;
     display: inline;
-    margin: 0 20px;
+    margin-left: 5px;
+    padding: 0px 60px;
 }
 .prop-box .addprop {
     display: inherit;
-    margin: 0 auto; /* center */
-    color: #222;
+    margin: 5px 0px;
+    line-height: 25px;
 }
 .deleted .addprop {
     display: none;
@@ -188,8 +205,10 @@ button {
 *   M E N U
 */
 .boxmenu{
-    border: 2px solid black;
-    border-radius: 3px;
+    border: 3px solid black;
+    border-width: 3px 1px;
+    border-radius: 5px;
+    background-color: #fff;
     
     position: absolute;
     top: -24px;
@@ -202,11 +221,13 @@ button {
 }
 .boxmenu button {
     font-weight:  700;
-    background-color: #fff;
     color: #222;
+    padding: 0 18px;
+}
+.deleted .boxmenu {    
+    background-color: transparent;
 }
 .deleted .boxmenu button{
-    background-color: transparent;
     color: #888;
 }
 .deleted .fullbtn {

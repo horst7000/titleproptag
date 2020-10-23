@@ -27,7 +27,10 @@ let collectionData = boxmgr.requestCollectionData();
 if(collectionData) {
     defaultbox.loadContent(collectionData.defaultboxid);
     console.log(boxmgr.allboxes);
-    collection.defaultboxid = collectionData.defaultboxid;
+    collection.defaultboxid = collectionData.defaultboxid;    
+}
+else {
+    defaultbox.onAddButtonClick();
 }
 
 // if(requestedshareid)
@@ -62,5 +65,11 @@ function fetchCollection() {
 window.addEventListener('keydown', (e) => { 
     if (e.key == 13 || e.keyCode == 13) { // Enter
         e.preventDefault();
+        if(e.target.classList.contains("title")) {
+            let titleEl = e.target;
+            let boxEl   = titleEl.parentNode;       
+            let box     = boxmgr.getBox(boxEl.dataset.id || boxEl.dataset.tmpid)
+            box.addButtonEvent();
+        }
     }
 })

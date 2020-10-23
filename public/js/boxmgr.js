@@ -54,7 +54,7 @@ export default class {
     /*
     * interaction
     */
-    fullscreen(fullscreenbox) {
+    enlargeBox(fullscreenbox) {
         if(fullscreenbox.mode != "ontop") {
             this.allboxes.forEach(box => {
                 if(box.isVisible()) box.setEnlargeFlag();
