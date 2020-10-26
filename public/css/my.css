@@ -13,6 +13,10 @@ body {
     display: none;
 }
 
+.hidden {
+    display: none;
+}
+
 button {
     border: 0;
 
@@ -156,9 +160,9 @@ button {
     display: none;
 }
 /** P R O P S */
-.default-box .props { 
+/* .default-box .props { 
     display: inline;
-}
+} */
 .prop-box .props { 
     display: inherit;
 }

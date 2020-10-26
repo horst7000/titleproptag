@@ -96,6 +96,23 @@ export default class {
         }
     }
 
-
+    updateMuuriInstances() {
+        this.allboxes.forEach(box => {
+            if(box.mode == "default") {
+                let muuri = new Muuri(box.propContainer, {
+                    dragEnabled: true,
+                    dragSort: true,
+                    items: box.propEls,
+                    layout: {
+                        fillGaps: true,
+                        horizontal: false,
+                        alignRight: false,
+                        alignBottom: false,
+                        rounding: true,
+                    }
+                })
+            }
+        });
+    }
 
 }

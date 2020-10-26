@@ -35,6 +35,8 @@ else {
 // if(requestedshareid)
 //     fetchCollection();
 
+// let grid = new Muuri(".muuri-grid", {dragEnabled: true})
+boxmgr.updateMuuriInstances()
 
 /*
 *
@@ -66,7 +68,7 @@ window.addEventListener('keydown', (e) => {
         e.preventDefault();
         if(e.target.classList.contains("title")) {
             let titleEl = e.target;
-            let boxEl   = titleEl.parentNode;       
+            let boxEl   = titleEl.parentNode.parentNode;       //TODO independent of .parentNode
             let box     = boxmgr.getBox(boxEl.dataset.id || boxEl.dataset.tmpid)
 
             if(box.mode != "point")

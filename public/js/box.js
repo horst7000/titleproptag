@@ -66,6 +66,8 @@ export default class Box {
     }
 
     set mode(mode) {
+        let b = this.boxContent;
+
         //* CSS
         if(this.mode) this.box.classList.remove(this.mode+"-box");
         this._mode = mode;
@@ -83,15 +85,17 @@ export default class Box {
             this.btnContainer.removeChild(this.fullscBtn);
 
         if(this.mode == "point" && this.isVisible() && this.box.contains(this.propsAndButtons)) {
-            this.box.removeChild(this.propsAndButtons);
+            b.removeChild(this.propsAndButtons);
         } else if(this.mode != "point" && !this.box.contains(this.propsAndButtons))
-            this.box.appendChild(this.propsAndButtons);
+            b.appendChild(this.propsAndButtons);
             
         if(this.mode == "point" && !this.box.contains(this.childCounter)) {
-            this.box.appendChild(this.childCounter);
+            b.appendChild(this.childCounter);
             this.updateChildCounter()
         } else if(this.mode != "point" && this.box.contains(this.childCounter))
-            this.box.removeChild(this.childCounter);
+            b.removeChild(this.childCounter);
+
+        this.updateMuuriClasses()        
     }
 
     get mode() {
@@ -153,19 +157,24 @@ export default class Box {
         /*
         * containers
         */
-        this.box     = document.createElement("div");
-        this.box.classList.add("box");
-        container.appendChild(this.box);
+       
+       this.box     = document.createElement("div");
+       this.box.classList.add("box");
+       container.appendChild(this.box);
+       
+       let b = document.createElement("div");
+       this.boxContent = b;
+       this.box.appendChild(b);
 
         let menuBtn   = document.createElement("button");
         menuBtn.innerHTML = ":";
         menuBtn.classList.add("menubtn");
-        this.box.appendChild(menuBtn);
+        b.appendChild(menuBtn);
         this.addEventToMenuButton(menuBtn);
 
         let tagContainer = document.createElement("div");
         tagContainer.classList.add("tags");
-        this.box.appendChild(tagContainer);
+        b.appendChild(tagContainer);
 
         let tag = document.createElement("span");
         tag.classList.add("tag");
@@ -175,13 +184,13 @@ export default class Box {
         let titleEl   = document.createElement("p");
         titleEl.contentEditable = true;
         titleEl.classList.add("title");
-        this.box.appendChild(titleEl);        
+        b.appendChild(titleEl);        
         this.addEventToTitle(titleEl)
 
         let propsAndButtons  = document.createElement("div");
         this.propsAndButtons = propsAndButtons
         propsAndButtons.classList.add("props-and-buttons");
-        this.box.appendChild(propsAndButtons); // is removed by "set mode" if mode=="point
+        b.appendChild(propsAndButtons); // is removed by "set mode" if mode=="point
 
         let propContainer  = document.createElement("div"); 
         this.propContainer = propContainer
@@ -216,7 +225,7 @@ export default class Box {
         childCounter.innerText = "+0";
         childCounter.classList.add("childcounter");
         childCounter.classList.add("hidden");
-        this.box.appendChild(childCounter);
+        b.appendChild(childCounter);
         childCounter.onclick = (e) => this.fullscreen()
     }
     
@@ -368,10 +377,10 @@ export default class Box {
         this.removetmpid();
         
         let json = this.boxmgr.requestBoxData(newid);
-        if(json) {
+        if(json) {            
             // load title
-            this.title = json.title;
-
+            if(!this.title)
+                this.title = json.title;
             
             this.updateChildCounter(json.props.length)
 
@@ -402,6 +411,27 @@ export default class Box {
         //             newbox.loadContent(propid);
         //         });
         //     });
+    }
+
+    updateMuuriClasses() {
+        if(this.mode == "default") {
+            this.propContainer.classList.add("muuri-grid")
+            console.log(this.propEls);
+            let muuri = new Muuri(this.propContainer, {
+                dragEnabled: true,
+                items: this.propEls
+            })
+        }
+        else
+            this.propContainer.classList.remove("muuri-grid")
+
+        if(this.mode == "prop") {
+            this.box.classList.add("muuri-item")
+            this.boxContent.classList.add("muuri-item-content")
+        } else {
+            this.box.classList.remove("muuri-item")
+            this.boxContent.classList.remove("muuri-item-content")
+        }        
     }
 
     updateChildCounter(count = this.propEls.length) {
