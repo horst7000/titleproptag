@@ -23,9 +23,15 @@ export default class {
     createElements() {
         this.menuEl = document.createElement("div");
         this.menuEl.classList.add("boxmenu");
+
+        let testBtn = document.createElement("button");
+        testBtn.innerHTML = "T";
+        testBtn.classList.add("fullbtn");
+        // this.menuEl.appendChild(testBtn);
+        this.addEventToTestButton(testBtn)
         
         let fullBtn = document.createElement("button");
-        fullBtn.innerHTML = "&#8597;";
+        fullBtn.innerHTML = "&#x26F6;";
         fullBtn.classList.add("fullbtn");
         this.menuEl.appendChild(fullBtn);
         this.addEventToFullButton(fullBtn)
@@ -37,6 +43,15 @@ export default class {
         this.addEventToDelButton(delBtn)
     }
     
+    addEventToTestButton(delBtn) {
+        delBtn.onclick =
+            (e) => {
+                console.log(this.box.propContainer.querySelector("[data-id='"+this.box.id+"'] > .box"));
+
+                this.hide();
+            };
+    }
+
     addEventToDelButton(delBtn) {
         delBtn.onclick =
             (e) => {

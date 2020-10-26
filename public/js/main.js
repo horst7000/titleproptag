@@ -26,7 +26,6 @@ for (let i = 0; i < json.length; i++) {
 let collectionData = boxmgr.requestCollectionData();
 if(collectionData) {
     defaultbox.loadContent(collectionData.defaultboxid);
-    console.log(boxmgr.allboxes);
     collection.defaultboxid = collectionData.defaultboxid;    
 }
 else {
@@ -69,7 +68,13 @@ window.addEventListener('keydown', (e) => {
             let titleEl = e.target;
             let boxEl   = titleEl.parentNode;       
             let box     = boxmgr.getBox(boxEl.dataset.id || boxEl.dataset.tmpid)
-            box.onAddButtonClick();
+
+            if(box.mode != "point")
+                box.onAddButtonClick();
+            else
+                box.usedin.forEach(b => {
+                    b.onAddButtonClick();
+                });
         }
     }
 })

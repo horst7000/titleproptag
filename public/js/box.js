@@ -17,6 +17,7 @@ export default class Box {
         // additional css modes:    "deleted" "selected"
         this.enlargeFlag= false;
         this.shrinkFlag = false;
+        this.ontopLvl   = this.mode == "ontop" ? 0 : -1;
 
         /*
         * collecting
@@ -76,10 +77,21 @@ export default class Box {
         else
             this.titleEl.contentEditable = true;
 
-        if(this.mode == "point" && this.isVisible() && this.box.contains(this.propContainer)) {
-            this.box.removeChild(this.propContainer);
-        } else if(this.mode != "point" && !this.box.contains(this.propContainer))
-            this.box.appendChild(this.propContainer);
+        if(this.mode == "prop" && !this.btnContainer.contains(this.fullscBtn)) {
+            this.btnContainer.appendChild(this.fullscBtn);
+        } else if(this.mode != "prop" && this.btnContainer.contains(this.fullscBtn))
+            this.btnContainer.removeChild(this.fullscBtn);
+
+        if(this.mode == "point" && this.isVisible() && this.box.contains(this.propsAndButtons)) {
+            this.box.removeChild(this.propsAndButtons);
+        } else if(this.mode != "point" && !this.box.contains(this.propsAndButtons))
+            this.box.appendChild(this.propsAndButtons);
+            
+        if(this.mode == "point" && !this.box.contains(this.childCounter)) {
+            this.box.appendChild(this.childCounter);
+            this.updateChildCounter()
+        } else if(this.mode != "point" && this.box.contains(this.childCounter))
+            this.box.removeChild(this.childCounter);
     }
 
     get mode() {
@@ -115,17 +127,24 @@ export default class Box {
     // }
 
     get propEls() {
-        let props = this.propContainer;
-        if(props)
-            return props.childNodes;
-        else
-            return [];
+        let pCon = this.propContainer;
+        let pEls = [];
+        for (let i = 0; i < pCon.childNodes.length; i++) {
+            // if(pCon.childNodes[i].classList.contains("box"))
+            pEls.push(pCon.childNodes[i])
+        }
+        return pEls;
     }
 
     isVisible() {
         return (this.box.offsetHeight != 0 && this.box.offsetWidth != 0)
     }
 
+    contains(id) {
+        // id == this.id    return true/false?
+        return !!(this.box.querySelector("[data-id='"+id+"']") || this.box.querySelector("[data-tmpid='"+id+"']"))
+    }
+    
     changed() {
         this.boxmgr.onBoxChange(this);
     }
@@ -136,7 +155,7 @@ export default class Box {
         */
         this.box     = document.createElement("div");
         this.box.classList.add("box");
-        container.insertBefore(this.box, container.lastChild);
+        container.appendChild(this.box);
 
         let menuBtn   = document.createElement("button");
         menuBtn.innerHTML = ":";
@@ -159,17 +178,46 @@ export default class Box {
         this.box.appendChild(titleEl);        
         this.addEventToTitle(titleEl)
 
-        let propContainer = document.createElement("div"); 
+        let propsAndButtons  = document.createElement("div");
+        this.propsAndButtons = propsAndButtons
+        propsAndButtons.classList.add("props-and-buttons");
+        this.box.appendChild(propsAndButtons); // is removed by "set mode" if mode=="point
+
+        let propContainer  = document.createElement("div"); 
         this.propContainer = propContainer
         propContainer.classList.add("props");
-        this.box.appendChild(propContainer); // is removed by "set mode" if mode=="point
+        propsAndButtons.appendChild(propContainer);
+
+        let btnContainer = document.createElement("div");
+        this.btnContainer = btnContainer
+        btnContainer.classList.add("btns");
+        propsAndButtons.appendChild(btnContainer);
 
         // add prop button
-        let addProp = document.createElement("p");
-        addProp.innerText = "+";
-        addProp.classList.add("addprop");
-        propContainer.appendChild(addProp);
-        this.addEventToAddButton(addProp);
+        let addPropBtn = document.createElement("button");
+        addPropBtn.innerText = "+";
+        addPropBtn.classList.add("btninsidebox");
+        addPropBtn.classList.add("addprop");
+        btnContainer.appendChild(addPropBtn);
+        this.addEventToAddButton(addPropBtn);
+        
+        // fullscreen button
+        let fullscBtn  = document.createElement("button");
+        this.fullscBtn = fullscBtn
+        fullscBtn.innerHTML = "&#x26F6;";
+        fullscBtn.classList.add("btninsidebox");
+        fullscBtn.classList.add("fullscbtn");
+        btnContainer.appendChild(fullscBtn);
+        fullscBtn.onclick = (e) => this.fullscreen()
+        
+        // child counter
+        let childCounter  = document.createElement("button");
+        this.childCounter = childCounter
+        childCounter.innerText = "+0";
+        childCounter.classList.add("childcounter");
+        childCounter.classList.add("hidden");
+        this.box.appendChild(childCounter);
+        childCounter.onclick = (e) => this.fullscreen()
     }
     
     createProp() {
@@ -213,6 +261,14 @@ export default class Box {
         this.box.classList.remove("selected");
     }
 
+    show() {
+        this.box.classList.remove("hidden")
+    }
+
+    hide() {
+        this.box.classList.add("hidden")
+    }
+
     focusTitle() {
         this.titleEl.focus()
     }
@@ -220,6 +276,7 @@ export default class Box {
     fullscreen() {
         while(this.mode != "default")
             this.boxmgr.enlargeBox(this);
+        this.box.scrollIntoView()
     }
     
     getLargerModeName() {
@@ -260,12 +317,18 @@ export default class Box {
 
     enlarge() {
         this.enlargeFlag = false;
-        this.mode        = this.getLargerModeName();
+        if(this.ontopLvl == -1)
+            this.mode = this.getLargerModeName();
+        if(this.mode == "ontop")
+            this.ontopLvl++;
     }
 
     shrink() {
         this.shrinkFlag = false;
-        this.mode       = this.getSmallerModeName();
+        if(this.mode == "ontop")
+            this.ontopLvl--;
+        if(this.ontopLvl==-1)
+            this.mode = this.getSmallerModeName();
     }
 
     asJSON() {
@@ -273,8 +336,6 @@ export default class Box {
         let propids = [];
         let props = this.propEls;
         for (let i = 0; i < props.length; i++) {
-            if(props[i].classList.contains("addprop"))
-                continue;
             propids.push(props[i].dataset.id || props[i].dataset.tmpid);
         }
 
@@ -286,15 +347,20 @@ export default class Box {
         };
     }
 
-    loadContent(newid) {
+    loadContent(newid = (this.id || this.tmpid)) {
         if(newid[0] == "_") {
             // if box has a tmpid it has no props to load
             this.tmpid = newid;
             return;
         }
-        if(this.propEls.length > 1) {
+        if(this.propContainer.querySelector(".box")) {
             // if propContainer has elements apart from add button
             // then content has already been loaded
+            this.propEls.forEach(propEl => {
+                if(propEl.classList.contains("box")) {
+                    propEl.classList.remove("hidden")
+                }
+            })
             return;
         }
         
@@ -305,6 +371,10 @@ export default class Box {
         if(json) {
             // load title
             this.title = json.title;
+
+            
+            this.updateChildCounter(json.props.length)
+
             // load props i.e. add containers for constructors of new boxes
             json.props.forEach(propid => {            
                 if(this.mode != "point") {
@@ -334,14 +404,22 @@ export default class Box {
         //     });
     }
 
+    updateChildCounter(count = this.propEls.length) {
+        this.childCounter.innerText = "+"+count;
+        if(count == 0)
+            this.childCounter.classList.add("hidden")
+        else
+            this.childCounter.classList.remove("hidden")
+
+    }
 
     /*
     * B U T T O N S
     */
     onAddButtonClick(e) {
-        if(this.mode == "point") { // if point no prop can be added
-            this.boxmgr.enlargeBox(this);
-        }
+        // if(this.mode == "point") { // if point no prop can be added
+        //     this.boxmgr.enlargeBox(this);
+        // }
         
         let newbox = this.createProp();
         newbox.focusTitle();

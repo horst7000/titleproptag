@@ -54,8 +54,10 @@ export default class {
     /*
     * interaction
     */
-    enlargeBox(fullscreenbox) {
-        if(fullscreenbox.mode != "ontop") {
+    enlargeBox(enlargingbox) {
+        let enboxmode = enlargingbox.mode;
+
+        if(enlargingbox.mode != "ontop") {
             this.allboxes.forEach(box => {
                 if(box.isVisible()) box.setEnlargeFlag();
             });
@@ -63,20 +65,33 @@ export default class {
             // therefore changing mode (enlarge) and loading content needs to be seperated
             this.allboxes.forEach(box => {
                 if(box.enlargeFlag) box.enlarge();
-                if(box.mode == "prop") box.loadContent(box.id || box.tmpid);
+                if(box.mode == "prop") box.loadContent();
             });
         } else {
             this.allboxes.forEach(box => {
                 if(box.isVisible()) {
-                    if(box.mode == "ontop") {
-                        if(!box.propEls || !box.propEls[0].classList.contains("ontop-box"))
-                            box.setShrinkFlag()
-                    } else
-                        box.setShrinkFlag();
-                } 
+                    box.setShrinkFlag();
+
+                    // show ontop boxes which were hidden
+                    if(box.ontopLvl == 1)
+                        box.loadContent();
+                }
             });
-            this.allboxes.forEach(box => {
+            this.allboxes.forEach(box => { // maybe a shrink list like update list in saver(?)
                 if(box.shrinkFlag) box.shrink();
+            });
+        }
+
+        // parallel ontop boxes needs to be hidden otherwise they could get shrunk
+        // even if they shouldnt get e.g. they dont contain ontop boxes but they siblings do.
+
+        // hide ontop boxes which do not contain enlargingbox
+        if(enboxmode != "ontop") {
+            this.allboxes.forEach(box => {
+                if(box.isVisible() && box.mode == "ontop") {
+                    if(box.ontopLvl == 0 && !box.contains(enlargingbox.id || enlargingbox.tmpid))
+                        box.hide();
+                }
             });
         }
     }
