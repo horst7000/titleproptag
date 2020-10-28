@@ -36,7 +36,6 @@ button {
     background: #18356b;
     color: #ccc;
 
-    padding: 10px;
     margin: 0 auto;
     margin-bottom: 10px;
 
@@ -50,15 +49,22 @@ button {
                 border-width 0.2s ease-in-out;
 }
 .ontop-box.box {
-    border-top: 2px solid #667;
+    border-top: 3px solid #999;
     border-bottom: none;
-    background: #dadada;
-    color: #333;
-    padding: unset;
+    
+    background: #eee;
+    color: #555;
+    
     width: 100%;
+    /* box-shadow: black 0px 0px 8px -2px; */
+}
+.default-box.box {
+    padding: 10px;
+    /* box-shadow: black 0px 0px 14px -2px; */
 }
 .prop-box.box {
     border-color: #ccccfc;
+    filter: none;
 
     background: #e2e2e2;
     color: black;
@@ -91,13 +97,16 @@ button {
 */
 .title {
     min-height: 27px; /* 16px font height */
-    font-size: 30px;
-    margin: 0;
+    font-size: 21px;
+    font-weight: 600;
+    margin: 0px 8px;
+    cursor: pointer;
 }
 .default-box .title {
     font-weight: 400;
     font-size: 30px;
     margin: 20px 0px;
+    cursor: unset;
 }
 .prop-box .title {
     font-size: 20px;
@@ -283,8 +292,17 @@ button {
 }
 
 /* laptop styles */
-@media screen and (min-width: 960px) {
-    
+@media screen and (min-width: 960px) {    
+    .ontop-box.box {
+        padding: 3px;
+        box-shadow: black 0px 0px 8px -2px;
+    }
+    .default-box.box {
+        box-shadow: black 0px 0px 14px -2px;
+    }
+    .title {
+        margin: 0px;
+    }
 }
 
 /* desktop styles */
