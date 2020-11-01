@@ -21,10 +21,14 @@ button {
     /* font-weight:  700; */
     font-size: 16px;
     color: #bbb;
+    user-select: none;
     
     cursor: pointer;
 }
 
+.hidden {
+    display: none !important;
+}
 
 /*
 *   B O X
@@ -165,12 +169,18 @@ button {
     display: none;
 }
 /** P R O P S */
+.props {
+    min-height: 0;
+    transition: all 0.2s ease-in;
+}
 .default-box .props { 
     display: inline;
 }
 .prop-box .props { 
     display: inherit;
 }
+
+
 /** B U T T O N S   C O N T A I N E R*/
 .btns { 
     display: inline;
@@ -225,7 +235,6 @@ button {
     border-color: transparent;
     padding-top: 3px;
 }
-
 
 /** C H I L D C O U N T E R*/
 .childcounter {

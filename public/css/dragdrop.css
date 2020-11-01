@@ -1,0 +1,19 @@
+.sortable-drag {
+    transition: unset;
+    background-color: #17a59a;
+}
+.sortable-chosen { /* placeholder indicates where item will be dropped. starts as soon as delay is over */
+    opacity: 0.8;
+    transition: unset;
+    /* transform: scale(0.9); */
+}
+.sortable-ghost { /* placeholder indicates where item will be dropped. starts as soon as item is moved */
+    opacity: 0.8;
+}
+
+.props.display-block {
+    border: 1px dashed turquoise;
+    min-height: 90px;
+    display: block;    
+    transition: all 0.2s ease-out;
+}

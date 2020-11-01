@@ -40,6 +40,41 @@ export default class {
         return this.JSONcollectionData;
     }
 
+    getOwningBox(el) {
+        while (el && !el.classList.contains("boxes") && !el.classList.contains("box")) {
+            el = el.parentNode;
+        }
+        return this.getBox(el.dataset.id || el.dataset.tmpid) || {box: el}
+    }
+
+    getLargerModeName(oldmode) {
+        if(oldmode == "ontop")
+            return "ontop"
+        
+        if(oldmode == "default")
+            return "ontop"
+        
+        if(oldmode == "prop")
+            return "default"
+
+        if(oldmode == "point")
+            return "prop"
+    }
+
+    getSmallerModeName(oldmode) {
+        if(oldmode == "ontop")
+            return "default"
+        
+        if(oldmode == "default")
+            return "prop"
+        
+        if(oldmode == "prop")
+            return "point"
+
+        if(oldmode == "point")
+            return "point"
+    }
+
     /*
     * Save boxes
     */
@@ -54,10 +89,10 @@ export default class {
     /*
     * interaction
     */
-    enlargeBox(enlargingbox) {
-        let enboxmode = enlargingbox.mode;
+    zoomStepToBox(zoomedbox) {
+        let zboxmode = zoomedbox.mode;
 
-        if(enlargingbox.mode != "ontop") {
+        if(zoomedbox.mode != "ontop") {
             this.allboxes.forEach(box => {
                 if(box.isVisible()) box.setEnlargeFlag();
             });
@@ -85,17 +120,40 @@ export default class {
         // parallel ontop boxes needs to be hidden otherwise they could get shrunk
         // even if they shouldnt get e.g. they dont contain ontop boxes but they siblings do.
 
-        // hide ontop boxes which do not contain enlargingbox
-        if(enboxmode != "ontop") {
+        // hide ontop boxes which do not contain zoomedbox
+        if(zboxmode != "ontop") {
             this.allboxes.forEach(box => {
                 if(box.isVisible() && box.mode == "ontop") {
-                    if(box.ontopLvl == 0 && !box.contains(enlargingbox.id || enlargingbox.tmpid))
+                    if(box.ontopLvl == 0 && !box.contains(zoomedbox.id || zoomedbox.tmpid))
                         box.hide();
                 }
             });
         }
     }
 
+    changeMode(box, mode) { /* changes box mode and mode of children */
+        box.mode = mode;
+        box.loadContent()
+        if(mode != "point") {
+            box.propEls.forEach(propBoxEl => {
+                let propBox = this.getBox(propBoxEl.dataset.id || propBoxEl.dataset.tmpid);
+                this.changeMode(propBox,this.getSmallerModeName(mode))
+            })
+        }
+    }
 
+    prepareForDrop() {
+        this.allboxes.forEach(box => {
+            if(box.isVisible()) {
+                box.propContainer.classList.add("display-block")
+            }
+        });
+    }
+    
+    onDropEnd() {
+        this.allboxes.forEach(box => {            
+            box.propContainer.classList.remove("display-block")            
+        });        
+    }
 
 }

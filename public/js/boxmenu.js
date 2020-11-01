@@ -46,7 +46,8 @@ export default class {
     addEventToTestButton(delBtn) {
         delBtn.onclick =
             (e) => {
-                console.log(this.box.propContainer.querySelector("[data-id='"+this.box.id+"'] > .box"));
+                
+                this.box.box.style.transform = "translateY(-20px)"
 
                 this.hide();
             };
