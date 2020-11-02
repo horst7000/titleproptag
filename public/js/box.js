@@ -317,14 +317,16 @@ export default class Box {
         new Sortable(this.box.querySelector(".props"), {
             group: "box",
             delay: 150,
-            delayOnTouchOnly: true,
+            animation: 450,
+            // delayOnTouchOnly: true,
             dragClass: "sortable-drag",
             chosenClass: "sortable-chosen",
             ghostClass: "sortable-ghost",
-            swapThreshold: 0.01,
+            swapThreshold: 0.1,
+            // direction: (this.mode == "prop") ? "vertical" : "horizontal",
 
             onStart: (ev) => {
-                this.boxmgr.prepareForDrop();
+                this.boxmgr.prepareForDrop(ev);
                 let draggedBox  = this.boxmgr.getOwningBox(ev.item);
                 draggedBox.propContainer.classList.remove("display-block");
             },
@@ -338,6 +340,10 @@ export default class Box {
                 }
             },
             onMove: (ev) => {
+                // if(ev.to != ev.from) {
+                    this.boxmgr.onDropEnd();          
+                    this.boxmgr.prepareForDrop(ev);
+                // }
                 let draggedBox  = this.boxmgr.getOwningBox(ev.dragged);
                 let toBox       = this.boxmgr.getOwningBox(ev.to);
                 this.boxmgr.changeMode(draggedBox, this.boxmgr.getSmallerModeName(toBox.mode));

@@ -21,8 +21,11 @@ export default class {
         this.allboxes.delete(id);
     }
     
-    getBox(id) {
-        return this.allboxes.get(id)
+    getBox(idOrEl) {
+        if(idOrEl instanceof Element || idOrEl instanceof HTMLDocument) {
+            return this.getOwningBox(idOrEl)
+        } else
+            return this.allboxes.get(idOrEl)
     }
 
     addData(json) {
@@ -142,12 +145,29 @@ export default class {
         }
     }
 
-    prepareForDrop() {
-        this.allboxes.forEach(box => {
-            if(box.isVisible()) {
-                box.propContainer.classList.add("display-block")
-            }
-        });
+    prepareForDrop(ev) {
+        let owningDefaultBox = ev.related ? this.getOwningBox(ev.related) : this.getOwningBox(ev.from);
+        let owningOntopBox;
+        let n = -1
+
+        if(owningDefaultBox.mode && owningDefaultBox.mode != "ontop") {
+            while(!owningDefaultBox.box.classList.contains("default-box"))
+                owningDefaultBox = this.getOwningBox(owningDefaultBox.box.parentNode);
+    
+            owningOntopBox = this.getOwningBox(owningDefaultBox.box.parentNode);
+            n = Array.prototype.indexOf.call(owningOntopBox.propEls, owningDefaultBox.box)
+        } else {
+            owningOntopBox = owningDefaultBox;
+            n = ev.newIndex || ev.oldIndex;
+        }
+
+        for (let i = 0; i < owningOntopBox.propEls.length; i++) {
+            const defaultBoxSibling = owningOntopBox.propEls[i];
+            if(i == n || i == n-1 || i == n+1)
+                defaultBoxSibling.querySelectorAll(".props").forEach((el) => {
+                    el.classList.add("display-block");
+                })
+        }
     }
     
     onDropEnd() {

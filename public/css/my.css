@@ -1,29 +1,26 @@
 body {
-    margin: 0;
     height: 100%;
+    margin: 0;
     font-family: 'Catamaran', sans-serif;
     background-color: #dadada;
 }
 
-.json {
-    font-size: 6pt;
-    color: grey;
-    line-height: 1;
-    margin: 4px 0;
-    display: none;
-}
-
 button {
     border: 0;
-
-    background-color: transparent;
-    
-    /* font-weight:  700; */
-    font-size: 16px;
     color: #bbb;
-    user-select: none;
-    
+    font-size: 16px;
+    /* font-weight:  700; */
     cursor: pointer;
+    user-select: none;
+    background-color: transparent;
+}
+
+.json {
+    display: none;
+    margin: 4px 0;
+    color: grey;
+    font-size: 6pt;
+    line-height: 1;
 }
 
 .hidden {
@@ -34,18 +31,15 @@ button {
 *   B O X
 */
 .box {
-    border-radius: 7px;
-    border-bottom: 2px solid #6270b3;
-
-    background: #18356b;
-    color: #ccc;
+    position: relative; /* for btn position absolute */
+    max-width: 1600px;
 
     margin: 0 auto;
     margin-bottom: 10px;
-
-    max-width: 1600px;
-    position: relative; /* for btn position absolute */
-    
+    border-bottom: 2px solid #6270b3;
+    border-radius: 7px;
+    color: #ccc;
+    background: #18356b;
     transition: all          0.3s linear,
                 background   0.5s ease-in-out 0.52s,
                 color        0.5s ease-in-out 0.52s,
@@ -53,13 +47,12 @@ button {
                 border-width 0.2s ease-in-out;
 }
 .ontop-box.box {
+    width: 100%;
+
     border-top: 3px solid #999;
     border-bottom: none;
-    
-    background: #eee;
     color: #555;
-    
-    width: 100%;
+    background: #eee;   
     /* box-shadow: black 0px 0px 8px -2px; */
 }
 .default-box.box {
@@ -67,18 +60,16 @@ button {
     /* box-shadow: black 0px 0px 14px -2px; */
 }
 .prop-box.box {
-    border-color: #ccccfc;
-    filter: none;
-
-    background: #e2e2e2;
-    color: black;
-
     display: inline-block;
     min-width: 148px;
     max-width: 42vw;
 
     margin: 3px;
     padding: 3px;
+    border-color: #ccccfc;
+    color: black;
+    background: #e2e2e2;
+    filter: none;
 }
 .point-box.box {
     margin-top: 3px;
@@ -90,10 +81,10 @@ button {
     color: #888
 }
 .box.selected{
-    border-style: solid;
-    border-width: 3px 0px;
-    border-color: #17a59a;
     z-index: 1;
+    border-width: 3px 0px;
+    border-style: solid;
+    border-color: #17a59a;
 }
 
 /*
@@ -101,27 +92,29 @@ button {
 */
 .title {
     min-height: 27px; /* 16px font height */
-    font-size: 21px;
     font-weight: 600;
-    margin: 0px 8px;
+    margin: 0;
+}
+.ontop-box > .title {
+    font-size: 21px;
     cursor: pointer;
 }
-.default-box .title {
+.default-box > .title {
+    margin: 20px 0px;
     font-weight: 400;
     font-size: 30px;
-    margin: 20px 0px;
-    cursor: unset;
 }
-.prop-box .title {
-    font-size: 20px;
-    margin: unset;
-    margin-right: 30px;
+.prop-box > .title {
     max-width: 365px;
+    margin-right: 18px;
+    font-size: 20px;
 }
-.point-box .title {
+.point-box > .title {
+    margin-right: 18px;
+    font-weight: 400;
     font-size: 16px;
 }
-.deleted .title {
+.deleted > .title {
     font-size: 13px;
     cursor: pointer;
 }
@@ -136,23 +129,20 @@ button {
 
 .tag {
     display: none;
-    
+    margin-right: 3px;
+    padding: 0px 5px; /* top+bottom left+right */
     border: 2px solid #bcbcbc;
     border-radius: 10px;
-
-    font-size: 9pt;
-    font-weight: 600;
-    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial;
     color: lightgrey;
-
-    padding: 0px 5px; /* top+bottom left+right */
-    margin-right: 3px;
+    font-weight: 600;
+    font-size: 9pt;
+    font-family: "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
 .prop-box .tag {
     border-width: 1px;
-    font-size: 8pt;
-    font-weight: 500;
     color: gray;
+    font-weight: 500;
+    font-size: 8pt;
 }
 .point-box .tag {
     color: lightgrey;
@@ -191,33 +181,33 @@ button {
 */
 .btninsidebox {
     opacity: 0.5;
-    /* cursor: pointer; */
     text-align: center;
+    /* cursor: pointer; */
 }
 .ontop-box .btninsidebox {
-    font-weight: 700;
-    font-size: 45px;
-    
     display: block;
     max-width: 42vw;
+
     margin: 0px auto;
     padding: 0 30px;
+    font-weight: 700;
+    font-size: 45px;    
 }
 .default-box .btninsidebox {
-    border: 3px solid #bbb;
-    border-radius: 7px;
-    font-size: 20pt;
-    font-weight: unset;
-    line-height: 25px;
-
     display: inline;
+
     margin-left: 5px;
     padding: 11px 60px;
+    border: 3px solid #bbb;
+    border-radius: 7px;
+    font-weight: unset;
+    font-size: 20pt;
+    line-height: 25px;
 }
 .prop-box .btninsidebox {
     display: inline-block;
-    padding: unset;
     margin: 5px 0px;
+    padding: unset;
 }
 .deleted .btninsidebox {
     display: none;
@@ -231,21 +221,19 @@ button {
 .prop-box .fullscbtn {
     position: absolute;
     right: 0;
-
-    border-color: transparent;
     padding-top: 3px;
+    border-color: transparent;
 }
 
 /** C H I L D C O U N T E R*/
 .childcounter {
-    font-weight: 700;
-    font-size: 10px;
-    line-height: 10px;
     opacity: 0.45;
-
     position: absolute;
     right:    0px;
     bottom:  -1px;
+    font-weight: 700;
+    font-size: 10px;
+    line-height: 10px;
 }
 
 /*
@@ -264,24 +252,23 @@ button {
 *   M E N U
 */
 .boxmenu{
-    border: 3px solid #17a59a;
-    border-width: 3px 1px;
-    border-radius: 5px;
-    background-color: #e2e2e2;
-    
     position: absolute;
     top: -24px;
     right: 0px;
+    border: 3px solid #17a59a;
+    border-width: 3px 1px;
+    border-radius: 5px;
+    background-color: #e2e2e2;    
 }
 .deleted .boxmenu {
-    border: 0;
-    right: 0;
     top: 0;
+    right: 0;
+    border: 0;
 }
 .boxmenu button {
-    font-weight:  700;
-    color: #222;
     padding: 0 18px;
+    color: #222;
+    font-weight:  700;
 }
 .deleted .boxmenu {    
     background-color: transparent;
