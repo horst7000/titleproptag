@@ -19,7 +19,7 @@
 }
 .props.display-block {
     border: 1px dashed turquoise;
-    min-height: 4rem;
+    min-height: 2.5rem;
     display: block;
     transition: all 1s ease-out;
 }

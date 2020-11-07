@@ -5,18 +5,17 @@ body {
 }
 
 button {
+    border: none;
+    outline: none;
+    color: grey;
     cursor: pointer;
     user-select: none;
-    border: none;
     background: transparent;
-    outline: none;
-    color: lightgrey;
 }
 
 p {
-    margin: 0.2rem;
+    margin: 0.26rem;
     margin-right: 0.9rem;
-    font-weight: 400;
     outline: none;
 }
 p:focus {
@@ -30,38 +29,48 @@ p:focus {
 /** BOX */
 .box {
     position: relative;
-    border: 1px solid #044;
-    border-radius: 12px;
     min-width: 4rem;
     max-width: 100%;
+    border: 1px solid #044;
+    border-radius: 12px;
     transition: all 0.3s ease-in-out
 }
 .ontop-box {
-    color: #999;
-    background-color: #345;
     max-width: 1024px;
     margin: 0 auto;
+    color: #999;
+    font-weight: 600;
+    font-size: 0.85rem;
+    background-color: #345;
 }
 .default-box {
+    margin: 3px 0;
     color: lightgrey;
+    font-weight: 400;
+    font-size: 1.06rem;
     background-color: #17202b;
-    margin: 2px 0;
 }
 .prop-box {
-    max-width: 47vw;
     display: inline-block;
-    font-size: 0.85rem;
+    margin-top: 3px;
+    max-width: 47vw;
     font-weight: 600;
+    font-size: 0.85rem;
 }
 .point-box {
+    border-width: 0 0 1px 0;
+    border-radius: 4px;
     font-weight: 400;
+}
+.point-box:first-of-type {
+    border-top-width: 1px;
 }
 
 /** DELETED */
 .deleted.box {
-    background-color: #bbb;
-    font-size: 0.8rem;
     color: #555;
+    font-size: 0.8rem;
+    background-color: #bbb;
 }
 /*TODO MOVE TO JAVASCRIPT INLINE CSS*/
 .deleted .props-and-buttons {
@@ -74,10 +83,10 @@ p:focus {
     display: none;
 }
 .deleted .boxmenu {    
-    background-color: transparent;
     top: 0;
     right: 0;
     border: 0;    
+    background-color: transparent;
 }
 .deleted .boxmenu > button {    
     color: #555;
@@ -86,30 +95,31 @@ p:focus {
 /** TITLE */
 .title {
     min-height: 0.3rem;
-    font-size: inherit;
     font-weight: inherit;
+    font-size: inherit;
 }
 .ontop-box > .title {    
-    font-size: 0.85rem;
-    font-weight: 600;
     cursor: pointer;
 }
 
 /** POSITION ADDBUTTON */
 /** CENTER */
 .addprop {
-    text-align: center;
-    width: 100%;
+    /* text-align: center; */
+    display: block;
+    width: 50%;
+    margin: 0 auto;
 }
 /** INLINE */
 .default-box .addprop {
-    max-width: 4rem;
+    display: unset;
+    max-width: 4rem;    
     /* border: 1px solid #044;
     border-radius: 12px; */
 }
 .prop-box .addprop {
+    display: block;
     max-width: unset;
-    border: none;
 }
 .props {
     display: inline;
@@ -128,13 +138,14 @@ p:focus {
     position: absolute;
     top: -24px;
     right: 0px; 
-    background: #17202b;
     border: 1px solid #044;
     border-radius: 12px;
+    background: #17202b;
 }
 .fullscbtn {
     position: absolute;
     right: 0;
+    bottom: 0;
 }
 .childcounter {
     position: absolute;

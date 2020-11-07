@@ -24,11 +24,6 @@ export default class Box {
         * collecting
         */
         this.usedin = new Set();
-
-        /*
-        * saving
-        */
-        this.titleEl.oninput = (() => this.changed());
     }
 
     set id(id) {
@@ -185,7 +180,7 @@ export default class Box {
         titleEl.contentEditable = true;
         titleEl.classList.add("title");
         this.box.appendChild(titleEl);        
-        this.addEventToTitle(titleEl)
+        this.addEventsToTitle(titleEl)
 
         let propsAndButtons  = document.createElement("div");
         this.propsAndButtons = propsAndButtons
@@ -216,7 +211,7 @@ export default class Box {
         fullscBtn.innerHTML = "&#x26F6;";
         fullscBtn.classList.add("btninsidebox");
         fullscBtn.classList.add("fullscbtn");
-        btnContainer.appendChild(fullscBtn);
+        this.box.appendChild(fullscBtn);
         fullscBtn.onclick = (e) => this.fullscreen()
         
         // child counter
@@ -257,7 +252,7 @@ export default class Box {
                 this.box.classList.remove("deleted");
                 this.title = this.tmptitle;
                 this.titleEl.contentEditable = true;
-                this.addEventToTitle(this.titleEl); // resets this.titleEl.onclick
+                this.addEventsToTitle(this.titleEl); // resets this.titleEl.onclick
                 this.boxmenu.hide();
             };
         }
@@ -316,8 +311,8 @@ export default class Box {
     activateDragAndDrop() {
         new Sortable(this.box.querySelector(".props"), {
             group: "box",
-            delay: 150,
-            animation: 450,
+            delay: 400,
+            animation: 400,
             // delayOnTouchOnly: true,
             dragClass: "sortable-drag",
             chosenClass: "sortable-chosen",
@@ -453,6 +448,7 @@ export default class Box {
     }
 
     addEventToMenuButton(menuBtn) {
+        // toggle button visibility
         menuBtn.onclick =
             (e) => {
                 if(this.boxmenu.isVisible())
@@ -462,12 +458,27 @@ export default class Box {
             };
     }
 
-    addEventToTitle(titleEl) {
+    addEventsToTitle(titleEl) {
+        // navigate to ontop boxes
         titleEl.onclick =
             (e) => {
                 if(this.mode == "ontop" && !this.box.parentNode.classList.contains("boxes"))
                     this.fullscreen();
             };
+        
+        // notify saver
+        titleEl.oninput =
+            (e) => {
+                console.log(e);
+                this.changed();
+            };
+
+        // prevent style from being inserted (paste) into title
+        titleEl.addEventListener('paste', function(e) {
+            e.preventDefault();
+            var text = e.clipboardData.getData("text/plain");
+            document.execCommand("insertHTML", false, text);
+        });
     }
 
 }
