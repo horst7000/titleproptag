@@ -89,10 +89,21 @@ export default class {
         this.saver.onBoxChange(box);
     }
 
+    /* Test cases */
+    generateTests() {
+        this.allboxes.forEach(box => {
+            if(Math.random() < 0.5 && box.mode!="ontop") {        
+                let newbox = box.createProp();
+                newbox.title = "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua"
+            }
+        })
+    }
+
+
     /*
     * interaction
     */
-    zoomStepToBox(zoomedbox) {
+    zoomstepToBox(zoomedbox) {
         let zboxmode = zoomedbox.mode;
 
         if(zoomedbox.mode != "ontop") {
@@ -126,10 +137,13 @@ export default class {
         // hide ontop boxes which do not contain zoomedbox
         if(zboxmode != "ontop") {
             this.allboxes.forEach(box => {
-                if(box.isVisible() && box.mode == "ontop") {
-                    if(box.ontopLvl == 0 && !box.contains(zoomedbox.id || zoomedbox.tmpid))
+                if( box.isVisible() &&
+                    box.mode == "ontop" && 
+                    box.ontopLvl == 0 &&
+                    !box.contains(zoomedbox.id || zoomedbox.tmpid) &&
+                    (!box.id || box.id != zoomedbox.id) &&
+                    (!box.tmpid || box.tmpid != zoomedbox.tmpid) )
                         box.hide();
-                }
             });
         }
     }

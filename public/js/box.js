@@ -18,7 +18,7 @@ export default class Box {
         // additional css modes:    "deleted" "selected"
         this.enlargeFlag= false;
         this.shrinkFlag = false;
-        this.ontopLvl   = this.mode == "ontop" ? 0 : -1;
+        this.ontopLvl   = this.mode == "ontop" ? 0 : -1;        
 
         /*
         * collecting
@@ -30,6 +30,7 @@ export default class Box {
         if(this.id && this.id == id) return; // prevents unnecessary addition to boxmgr.allboxes
         if(this.id) this.boxmgr.removeBox(this.id);
         this.box.dataset.id = id;
+        this.box.id = id;
         this.boxmgr.addBox(this);
     }
 
@@ -41,6 +42,7 @@ export default class Box {
         if(this.tmpid && this.tmpid == tmpid) return; // prevents unnecessary addition to boxmgr.allboxes
         if(this.tmpid) this.boxmgr.removeBox(this.tmpid);
         this.box.dataset.tmpid = tmpid;
+        this.box.id = tmpid;
         this.boxmgr.addBox(this);
     }
 
@@ -71,35 +73,20 @@ export default class Box {
         this.box.classList.add(this.mode+"-box");
 
         //* ELEMENT SETTINGS
-        if(mode == "ontop")
-            this.titleEl.contentEditable = false;
-        else
-            this.titleEl.contentEditable = true;
-
-        if(this.mode == "prop") {
-            this.fullscBtn.classList.remove("hidden")
-        } else
-            this.fullscBtn.classList.add("hidden");
-        
-        if(this.mode == "point") {
-            this.propsAndButtons.classList.add("hidden")
-            this.childCounter.classList.remove("hidden")
-            this.updateChildCounter()
-        } else {
-            this.propsAndButtons.classList.remove("hidden")
-            this.childCounter.classList.add("hidden")
-        }
-        
-        // remove hidden nodes to keep node depth low
-        if(!this.isVisible() && this.box.contains(this.propsAndButtons)) {
-            this.box.removeChild(this.propsAndButtons);
-            console.log("removing props of "+this.title);
-        } else if (this.isVisible() && !this.box.contains(this.propsAndButtons))
-            this.box.appendChild(this.propsAndButtons);
+        this.updateElements()
     }
 
     get mode() {
         return this._mode;
+    }
+
+    set ontopLvl(lvl) {
+        this._ontopLvl = lvl;
+        this.updateElements()
+    }
+
+    get ontopLvl() {
+        return this._ontopLvl;
     }
 
     get titleEl() {
@@ -161,12 +148,6 @@ export default class Box {
         this.box.classList.add("box");
         container.appendChild(this.box);
 
-        let menuBtn   = document.createElement("button");
-        menuBtn.innerHTML = ":";
-        menuBtn.classList.add("menubtn");
-        this.box.appendChild(menuBtn);
-        this.addEventToMenuButton(menuBtn);
-
         let tagContainer = document.createElement("div");
         tagContainer.classList.add("tags");
         this.box.appendChild(tagContainer);
@@ -182,23 +163,27 @@ export default class Box {
         this.box.appendChild(titleEl);        
         this.addEventsToTitle(titleEl)
 
-        let propsAndButtons  = document.createElement("div");
-        this.propsAndButtons = propsAndButtons
-        propsAndButtons.classList.add("props-and-buttons");
-        this.box.appendChild(propsAndButtons); // is removed by "set mode" if mode=="point
-
         let propContainer  = document.createElement("div"); 
         this.propContainer = propContainer
         propContainer.classList.add("props");
-        propsAndButtons.appendChild(propContainer);
+        this.box.appendChild(propContainer); // gets removed by "set mode" if mode=="point"
 
         let btnContainer = document.createElement("div");
         this.btnContainer = btnContainer
         btnContainer.classList.add("btns");
-        propsAndButtons.appendChild(btnContainer);
+        this.box.appendChild(btnContainer);
+
+        let menuBtn   = document.createElement("button");
+        // menuBtn.innerHTML = "&#x2630;";
+        menuBtn.innerHTML = "&#x22EE;";
+        // menuBtn.innerHTML = ":";
+        menuBtn.classList.add("menubtn");
+        btnContainer.appendChild(menuBtn);
+        this.addEventToMenuButton(menuBtn);
 
         // add prop button
         let addPropBtn = document.createElement("button");
+        this.addPropBtn = addPropBtn;
         addPropBtn.innerText = "+";
         addPropBtn.classList.add("btninsidebox");
         addPropBtn.classList.add("addprop");
@@ -211,7 +196,7 @@ export default class Box {
         fullscBtn.innerHTML = "&#x26F6;";
         fullscBtn.classList.add("btninsidebox");
         fullscBtn.classList.add("fullscbtn");
-        this.box.appendChild(fullscBtn);
+        btnContainer.appendChild(fullscBtn);
         fullscBtn.onclick = (e) => this.fullscreen()
         
         // child counter
@@ -220,10 +205,46 @@ export default class Box {
         childCounter.innerText = "+0";
         childCounter.classList.add("childcounter");
         childCounter.classList.add("hidden");
-        this.box.appendChild(childCounter);
+        btnContainer.appendChild(childCounter);
         childCounter.onclick = (e) => this.fullscreen()
     }
     
+    updateElements() {
+        if(this.mode == "ontop")
+            this.titleEl.contentEditable = false;
+        else
+            this.titleEl.contentEditable = true;
+
+        // ADD PROP BUTTON
+        if(this.ontopLvl > 0 || this.mode == "point")        
+            this.addPropBtn.classList.add("hidden")
+        else
+            this.addPropBtn.classList.remove("hidden")
+        
+        // FULLSCREEN BUTTON
+        if(this.mode == "prop" || this.mode == "default") {
+            this.fullscBtn.classList.remove("hidden")
+        } else
+            this.fullscBtn.classList.add("hidden");
+        
+        // OTHER BUTTONS
+        if(this.mode == "point") {
+            this.propContainer.classList.add("hidden")
+            this.childCounter.classList.remove("hidden")
+            this.updateChildCounter()
+        } else {
+            this.propContainer.classList.remove("hidden")
+            this.childCounter.classList.add("hidden")
+        }
+        
+        // remove hidden nodes to keep node depth low
+        if(!this.isVisible() && this.box.contains(this.propContainer)) {
+            this.box.removeChild(this.propContainer);
+            console.log("removing props of "+this.title);
+        } else if (this.isVisible() && !this.box.contains(this.propContainer))
+            this.box.insertBefore(this.propContainer, this.btnContainer);
+    }
+
     createProp() {
         if(this.mode == "point")
             return;
@@ -266,6 +287,17 @@ export default class Box {
         this.box.classList.remove("selected");
     }
 
+    highlight() {
+        let hashid = "#"+(this.id || this.tmpid)
+        // unset :target (css pseudoclass) so that
+        // it can be set again to same value with effect
+        if(window.location.hash == hashid)                    
+            window.location.hash = '';
+        setTimeout(() => {
+            window.location.hash = hashid;            
+        }, 1);
+    }
+
     show() {
         this.box.classList.remove("hidden")
     }
@@ -279,9 +311,15 @@ export default class Box {
     }
 
     fullscreen() {
-        while(this.mode != "default")
-            this.boxmgr.zoomStepToBox(this);
-        this.box.scrollIntoView()
+        // zoom till box is ontop with ontopLvl 0 but zoom ontopLvl 0 box one step back
+        // anybox -> ontop /w ontopLvl 0
+        // ontopLvl 0 -> defaultbox
+        if(this.ontopLvl == 0 && !this.box.parentNode.classList.contains("boxes"))
+            this.boxmgr.zoomstepToBox(this);         
+        else
+            while(this.ontopLvl != 0) // this.mode != "ontop"
+                this.boxmgr.zoomstepToBox(this);        
+        this.highlight()
     }
 
     setEnlargeFlag() {
@@ -462,7 +500,7 @@ export default class Box {
         // navigate to ontop boxes
         titleEl.onclick =
             (e) => {
-                if(this.mode == "ontop" && !this.box.parentNode.classList.contains("boxes"))
+                if(this.mode == "ontop")
                     this.fullscreen();
             };
         

@@ -26,19 +26,22 @@ export default class {
 
         let testBtn = document.createElement("button");
         testBtn.innerHTML = "T";
-        testBtn.classList.add("fullbtn");
+        testBtn.classList.add("bm-fullscbtn");
+        testBtn.classList.add("bm-btn");
         // this.menuEl.appendChild(testBtn);
         this.addEventToTestButton(testBtn)
         
         let fullBtn = document.createElement("button");
         fullBtn.innerHTML = "&#x26F6;";
-        fullBtn.classList.add("fullbtn");
+        fullBtn.classList.add("bm-fullscbtn");
+        fullBtn.classList.add("bm-btn");
         this.menuEl.appendChild(fullBtn);
         this.addEventToFullButton(fullBtn)
 
         let delBtn = document.createElement("button");
         delBtn.innerHTML = "&times;";
-        delBtn.classList.add("delbtn");
+        delBtn.classList.add("bm-delbtn");
+        delBtn.classList.add("bm-btn");
         this.menuEl.appendChild(delBtn);
         this.addEventToDelButton(delBtn)
     }
@@ -74,13 +77,16 @@ export default class {
 
     show() {
         this.boxEl.insertBefore(this.menuEl, this.boxEl.firstChild);
-        this.box.select();
+        let menuX = this.menuEl.getBoundingClientRect().x;
+        if(menuX < 0)
+            this.menuEl.style.right = menuX
+        // this.box.select();
     }
 
     hide() {
         if(this.isVisible()) {
             this.boxEl.removeChild(this.menuEl);
-            this.box.deselect();
+            // this.box.deselect();
         }
     }
 
