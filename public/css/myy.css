@@ -39,7 +39,7 @@ p:focus {
     max-width: 100%;
     border: 1px solid #044;
     border-radius: 12px;
-    transition: all 0.3s ease-in-out
+    transition: max-width 0.3s ease-in-out
 }
 .ontop-box {
     max-width: 1024px;
