@@ -44,24 +44,25 @@ p:focus {
 .ontop-box {
     max-width: 1024px;
     margin: 0 auto 2px auto;
-    color: #999;
-    font-weight: 600;
+    color: #012;
     font-size: 0.85rem;
     background-color: #345;    
 }
 .default-box {
-    margin: 3px 0;
-    color: lightgrey;
-    font-weight: 400;
-    font-size: 1.06rem;
+    margin: 3px;
+    color: #02a2a2;
+    font-size: 1.16rem;
     background-color: #17202b;
 }
 .prop-box {
     display: inline-block;
+    max-width: 48%;
     margin-top: 3px;
-    max-width: 47vw;
+    color: #bbb;
+    background-color: #131c26;
     font-weight: 600;
     font-size: 0.85rem;
+    vertical-align: top;
 }
 .point-box {
     border-top-color: transparent;
@@ -69,6 +70,7 @@ p:focus {
     border-left-color: transparent;
     border-radius: 4px;
     font-weight: 400;
+    padding-left: 0.2em;
 }
 .point-box:first-of-type {
     border-top-color: #044;
@@ -76,11 +78,11 @@ p:focus {
 
 /** SELECTED */
 .box:target {
-    animation: fadeout 2.7s ease-out reverse;
+    animation: fadeout 1s ease-out reverse;
 }
 @keyframes fadeout {
     to {
-        background-color: #3d516a;
+        background-color: #1c516d;
         color: white;
     }
 }
@@ -129,12 +131,15 @@ p:focus {
 }
 .ontop-box > .title {    
     cursor: pointer;
+    text-align: center;
+}
+.default-box > .title {
+    text-align: center;
 }
 
 /** POSITION ADDBUTTON */
 /** CENTER */
 .addprop {
-    /* text-align: center; */
     display: block;
     width: 50%;
     margin: 0 auto;
@@ -143,8 +148,6 @@ p:focus {
 .default-box .addprop {
     display: unset;
     max-width: 4rem;    
-    /* border: 1px solid #044;
-    border-radius: 12px; */
 }
 .prop-box .addprop {
     display: block;
