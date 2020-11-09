@@ -216,13 +216,13 @@ export default class Box {
             this.titleEl.contentEditable = true;
 
         // ADD PROP BUTTON
-        if(this.ontopLvl > 0 || this.mode == "point")        
+        if(this.mode == "ontop" || this.mode == "point")        
             this.addPropBtn.classList.add("hidden")
         else
             this.addPropBtn.classList.remove("hidden")
         
         // FULLSCREEN BUTTON
-        if(this.mode == "prop" || this.mode == "default") {
+        if(this.mode == "prop" && this.propEls.length > 0) {
             this.fullscBtn.classList.remove("hidden")
         } else
             this.fullscBtn.classList.add("hidden");
@@ -251,7 +251,7 @@ export default class Box {
 
         let newbox;    
         newbox = new Box(this.propContainer, this.boxmgr.getSmallerModeName(this.mode), this.boxmgr);        
-        newbox.usedin.add(this);
+        this.updateElements();
         return newbox;
     }
     
@@ -311,14 +311,8 @@ export default class Box {
     }
 
     fullscreen() {
-        // zoom till box is ontop with ontopLvl 0 but zoom ontopLvl 0 box one step back
-        // anybox -> ontop /w ontopLvl 0
-        // ontopLvl 0 -> defaultbox
-        if(this.ontopLvl == 0 && !this.box.parentNode.classList.contains("boxes"))
-            this.boxmgr.zoomstepToBox(this);         
-        else
-            while(this.ontopLvl != 0) // this.mode != "ontop"
-                this.boxmgr.zoomstepToBox(this);        
+        while(this.mode != "default" && !this.box.parentNode.classList.contains("boxes"))
+            this.boxmgr.zoomstepToBox(this);
         this.highlight()
     }
 

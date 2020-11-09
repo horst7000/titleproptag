@@ -29,9 +29,14 @@ if(collectionData) {
     collection.defaultboxid = collectionData.defaultboxid;    
 }
 else {
-    defaultbox.onAddButtonClick();
+    defaultbox.onAddButtonClick();    
+    let everythingbox = boxmgr.getBox(defaultbox.propEls[0]);
+    everythingbox.title = "everything";
+    everythingbox.titleEl.blur();
+    everythingbox.changed();
 }
 
+defaultbox.btnContainer.parentNode.removeChild(defaultbox.btnContainer);
 // if(requestedshareid)
 //     fetchCollection();
 
@@ -77,15 +82,12 @@ window.addEventListener('keydown', (e) => {
         e.preventDefault();
         if(e.target.classList.contains("title")) {
             let titleEl = e.target;
-            let boxEl   = titleEl.parentNode;       
-            let box     = boxmgr.getBox(boxEl.dataset.id || boxEl.dataset.tmpid)
+            let box     = boxmgr.getBox(titleEl)
 
             if(box.mode != "point")
                 box.onAddButtonClick();
             else
-                box.usedin.forEach(b => {
-                    b.onAddButtonClick();
-                });
+                boxmgr.getBox(box.box.parentNode).onAddButtonClick()                
         }
     }
 })

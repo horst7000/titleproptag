@@ -43,7 +43,7 @@ export default class {
         return this.JSONcollectionData;
     }
 
-    getOwningBox(el) {
+    getOwningBox(el) { // returns box if el is a box itself
         while (el && !el.classList.contains("boxes") && !el.classList.contains("box")) {
             el = el.parentNode;
         }
@@ -121,8 +121,8 @@ export default class {
                 if(box.isVisible()) {
                     box.setShrinkFlag();
 
-                    // show ontop boxes which were hidden
-                    if(box.ontopLvl == 1)
+                    // show ontop boxes which have been hidden
+                    if(box.ontopLvl == 0)
                         box.loadContent();
                 }
             });
@@ -138,8 +138,7 @@ export default class {
         if(zboxmode != "ontop") {
             this.allboxes.forEach(box => {
                 if( box.isVisible() &&
-                    box.mode == "ontop" && 
-                    box.ontopLvl == 0 &&
+                    box.mode == "default" && 
                     !box.contains(zoomedbox.id || zoomedbox.tmpid) &&
                     (!box.id || box.id != zoomedbox.id) &&
                     (!box.tmpid || box.tmpid != zoomedbox.tmpid) )
