@@ -159,6 +159,7 @@ export default class Box {
         
         let titleEl   = document.createElement("p");
         titleEl.contentEditable = true;
+        titleEl.spellcheck = false;
         titleEl.classList.add("title");
         this.box.appendChild(titleEl);        
         this.addEventsToTitle(titleEl)
