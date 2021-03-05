@@ -124,7 +124,8 @@ app.route('/api/box/')
     .patch( (req, res) =>  {
         const data = req.body;
         data.forEach(date => {
-            dbBoxes.update({_id: date.id},{$set: {
+            console.log(date);
+            dbBoxes.update({_id: date._id},{$set: {
                 title: date.title,
                 props: date.props,
             }, $unset: {tmpid:true}}, (err, newdoc) => {

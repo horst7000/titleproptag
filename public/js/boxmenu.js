@@ -69,7 +69,7 @@ export default class {
     addEventToFullButton(fullBtn) {
         fullBtn.onclick =
             (e) => {
-                this.box.fullscreen();
+                this.box.popUp();
                 this.hide();
             };
     }

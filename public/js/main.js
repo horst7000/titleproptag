@@ -1,6 +1,6 @@
 import Box from "./box.js"   /* module / import needs babel for IE11, UC Browser */
-import Saver from "./saver.js" /* https://babeljs.io/docs/en/usage */
-import Boxmgr from "./boxmgr.js"
+import Boxmgr from "./boxmgr.js" /* https://babeljs.io/docs/en/usage */
+
 
 const paths             = window.location.pathname.split("/");
 const requestedshareid  = paths[1];
@@ -10,36 +10,32 @@ collection.shareid      = requestedshareid || Math.random().toString(36).substr(
 if(!requestedshareid)
     history.pushState({}, collection.shareid, collection.shareid);
 
-const boxsaver          = new Saver(collection);
+const boxmgr                = new Boxmgr(collection);
 
-const boxmgr                = new Boxmgr();
-boxmgr.addSaver(boxsaver);
-const defaultbox            = new Box(document.querySelector(".boxes"), "ontop", boxmgr);
-collection.defaultboxid     = defaultbox.tmpid;
+let collectionData;
 
 const json = document.querySelectorAll(".json");
 for (let i = 0; i < json.length; i++) {
     const p = json[i];
-    boxmgr.addData(JSON.parse(p.innerHTML));
+    let data = JSON.parse(p.innerHTML);
+    if(data.hasOwnProperty("title"))
+        new Box(data, boxmgr);
+    else
+        collectionData = data;
     p.parentNode.removeChild(p);
 }
-let collectionData = boxmgr.requestCollectionData();
 if(collectionData) {
-    defaultbox.loadContent(collectionData.defaultboxid);
-    collection.defaultboxid = collectionData.defaultboxid;    
+    const defaultbox = boxmgr.getBox(collectionData.defaultboxid);
+    defaultbox.loadContent(document.querySelector(".boxes"));
+    collection.defaultboxid = collectionData.defaultboxid;
 }
 else {
-    defaultbox.onAddButtonClick();    
-    let everythingbox = boxmgr.getBox(defaultbox.propEls[0]);
-    everythingbox.title = "everything";
-    everythingbox.titleEl.blur();
-    everythingbox.changed();
+    const defaultbox = new Box({title: "everything"}, boxmgr);
+    defaultbox.loadContent(document.querySelector(".boxes"));
+    defaultbox.onAddButtonClick();
 }
 
-defaultbox.btnContainer.parentNode.removeChild(defaultbox.btnContainer);
-// if(requestedshareid)
-//     fetchCollection();
-
+//setTimeout(() => console.log(boxmgr.allboxes),1000)
 
 /*
 *

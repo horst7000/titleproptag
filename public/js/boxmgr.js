@@ -1,8 +1,13 @@
+import Box from "./box.js"
+import Saver from "./saver.js"
+
 export default class {
-    constructor() {
-        this.allboxes    = new Map();
-        this.JSONstartBoxData    = new Map();
+    constructor(collection) {
+        this.allboxes   = new Map();
+        this.popups     = [{box: document.querySelector(".boxes")}];
         this.JSONcollectionData;
+
+        this.saver = new Saver(collection, this);
         
         // setInterval(() => {
         //     this.allboxes.forEach((value,key) => console.log(value));
@@ -24,58 +29,39 @@ export default class {
     getBox(idOrEl) {
         if(idOrEl instanceof Element || idOrEl instanceof HTMLDocument) {
             return this.getOwningBox(idOrEl)
-        } else
-            return this.allboxes.get(idOrEl)
-    }
-
-    addData(json) {
-        if(json.hasOwnProperty("title"))
-            this.JSONstartBoxData.set(json._id, json);
-        else
-            this.JSONcollectionData = json;
-    }
-
-    requestBoxData(id) {
-        return this.JSONstartBoxData.get(id);
+        } else {
+            let box = this.allboxes.get(idOrEl);
+            if(!box)
+                box = this.fetchGetBox(idOrEl); //TODO not tested
+            return box;
+        }
     }
     
     requestCollectionData() {
         return this.JSONcollectionData;
     }
 
+    fetchGetBox(id) {     // insert new boxes
+        console.log("saving (insert boxes)...");
+        const options = { //for fetch
+            method: 'GET'
+        }
+        fetch('/api/box/'+id, options) // GET
+            .then((res) => (res.json()))
+            .then((json) => {
+                return new Box(json, this);
+            });
+    }
+
+    // get first box containing specific html element
     getOwningBox(el) { // returns box if el is a box itself
-        while (el && !el.classList.contains("boxes") && !el.classList.contains("box")) {
+        while (el && el != document.body && !el.classList.contains("box")) {
             el = el.parentNode;
         }
-        return this.getBox(el.dataset.id || el.dataset.tmpid) || {box: el}
-    }
-
-    getLargerModeName(oldmode) {
-        if(oldmode == "ontop")
-            return "ontop"
-        
-        if(oldmode == "default")
-            return "ontop"
-        
-        if(oldmode == "prop")
-            return "default"
-
-        if(oldmode == "point")
-            return "prop"
-    }
-
-    getSmallerModeName(oldmode) {
-        if(oldmode == "ontop")
-            return "default"
-        
-        if(oldmode == "default")
-            return "prop"
-        
-        if(oldmode == "prop")
-            return "point"
-
-        if(oldmode == "point")
-            return "point"
+        if(el && el != document.body)
+            return this.getBox(el.dataset.id || el.dataset.tmpid) || {box: el}
+        else
+            return document.body
     }
 
     /*
@@ -87,6 +73,11 @@ export default class {
 
     onBoxChange(box) {
         this.saver.onBoxChange(box);
+    }
+
+    saveNow(box) {
+        this.saver.onBoxChange(box);
+        this.saver.save();
     }
 
     /* Test cases */
@@ -103,50 +94,6 @@ export default class {
     /*
     * interaction
     */
-    zoomstepToBox(zoomedbox) {
-        let zboxmode = zoomedbox.mode;
-
-        if(zoomedbox.mode != "ontop") {
-            this.allboxes.forEach(box => {
-                if(box.isVisible()) box.setEnlargeFlag();
-            });
-            // box.loadContent() changes visibility (isVisible())
-            // therefore changing mode (enlarge) and loading content needs to be seperated
-            this.allboxes.forEach(box => {
-                if(box.enlargeFlag) box.enlarge();
-                if(box.mode == "prop") box.loadContent();
-            });
-        } else {
-            this.allboxes.forEach(box => {
-                if(box.isVisible()) {
-                    box.setShrinkFlag();
-
-                    // show ontop boxes which have been hidden
-                    if(box.ontopLvl == 0)
-                        box.loadContent();
-                }
-            });
-            this.allboxes.forEach(box => { // maybe a shrink list like update list in saver(?)
-                if(box.shrinkFlag) box.shrink();
-            });
-        }
-
-        // parallel ontop boxes needs to be hidden otherwise they could get shrunk
-        // even if they shouldnt get e.g. they dont contain ontop boxes but they siblings do.
-
-        // hide ontop boxes which do not contain zoomedbox
-        if(zboxmode != "ontop") {
-            this.allboxes.forEach(box => {
-                if( box.isVisible() &&
-                    box.mode == "default" && 
-                    !box.contains(zoomedbox.id || zoomedbox.tmpid) &&
-                    (!box.id || box.id != zoomedbox.id) &&
-                    (!box.tmpid || box.tmpid != zoomedbox.tmpid) )
-                        box.hide();
-            });
-        }
-    }
-
     changeMode(box, mode) { /* changes box mode and mode of children */
         box.mode = mode;
         box.loadContent()

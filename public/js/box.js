@@ -1,69 +1,41 @@
 import BoxMenu from "./boxmenu.js"
 
 export default class Box {
-    constructor(container, mode = "default", boxmgr) {
-        /*
-        *  creating
-        */
-        this.createElements(container);
-        this.boxmgr     = boxmgr;
-        this.boxmenu    = new BoxMenu(this);
-        this.activateDragAndDrop();
-
-        /*
-        * initialising
-        */
-        this.tmpid      = randomId(); // tmpid change adds box to boxmgr.allboxes
-        this.mode       = mode; //"ontop" "default" "prop" "point"
-        // additional css modes:    "deleted" "selected"
-        this.enlargeFlag= false;
-        this.shrinkFlag = false;
-        this.ontopLvl   = this.mode == "ontop" ? 0 : -1;        
-
-        /*
-        * collecting
-        */
-        this.usedin = new Set();
+    constructor(data, boxmgr) {
+        this.data   = data || {};
+        this.boxmgr = boxmgr;
+        if(!this.id) {
+            this.data.tmpid = this.data.tmpid || randomId();
+            this.data.props = [];
+            this.boxmgr.saveNow(this);
+        }
+        this.boxmgr.addBox(this);
     }
 
     set id(id) {
-        if(this.id && this.id == id) return; // prevents unnecessary addition to boxmgr.allboxes
-        if(this.id) this.boxmgr.removeBox(this.id);
-        this.box.dataset.id = id;
-        this.box.id = id;
-        this.boxmgr.addBox(this);
+        if(this.id && this.id == id) return;
+        this.data._id = id;
+        if(this.isVisible())
+            this.box.dataset.id = id;
     }
 
     get id() {
-        return this.box.dataset.id;
+        return this.data._id;
     }
 
     set tmpid(tmpid) {
-        if(this.tmpid && this.tmpid == tmpid) return; // prevents unnecessary addition to boxmgr.allboxes
-        if(this.tmpid) this.boxmgr.removeBox(this.tmpid);
-        this.box.dataset.tmpid = tmpid;
-        this.box.id = tmpid;
-        this.boxmgr.addBox(this);
+        if(this.tmpid && this.tmpid == tmpid) return;
+        this.data.tmpid = tmpid;
     }
 
     get tmpid() {
-        return this.box.dataset.tmpid;
+        return this.data.tmpid;
     }
     
     replacetmpid(newid) {
+        // set id
         this.id = newid;
-        // this.usedin.forEach(parentbox => {
-        //     parentbox.changed();
-        // });
-        let parentBox = this.boxmgr.getOwningBox(this.box.parentNode) // parent of defaultbox is boxes container
-        if(!parentBox.box.classList.contains("boxes"))
-            parentBox.changed();
-        this.removetmpid();
-    }
-
-    removetmpid() {
-        this.boxmgr.removeBox(this.tmpid);
-        delete this.box.dataset.tmpid;
+        this.boxmgr.addBox(this);
     }
 
     set mode(mode) {
@@ -71,22 +43,10 @@ export default class Box {
         if(this.mode) this.box.classList.remove(this.mode+"-box");
         this._mode = mode;
         this.box.classList.add(this.mode+"-box");
-
-        //* ELEMENT SETTINGS
-        this.updateElements()
     }
 
     get mode() {
         return this._mode;
-    }
-
-    set ontopLvl(lvl) {
-        this._ontopLvl = lvl;
-        this.updateElements()
-    }
-
-    get ontopLvl() {
-        return this._ontopLvl;
     }
 
     get titleEl() {
@@ -94,7 +54,10 @@ export default class Box {
     }
 
     get title() {
-        return this.titleEl.textContent;
+        if(this.box)
+            return this.titleEl.textContent;
+        else
+            return this.tmpid || this.id;
     }
 
     set title(title) {
@@ -128,7 +91,8 @@ export default class Box {
     }
 
     isVisible() {
-        return (this.box.offsetHeight != 0 && this.box.offsetWidth != 0)
+        //return (this.box.offsetHeight != 0 && this.box.offsetWidth != 0)
+        return !!(this.box)
     }
 
     contains(id) {
@@ -140,34 +104,21 @@ export default class Box {
         this.boxmgr.onBoxChange(this);
     }
 
-    createElements(container) {
+    createBasicElements(container) {
         /*
         * containers
         */
         this.box     = document.createElement("div");
         this.box.classList.add("box");
         container.appendChild(this.box);
-
-        let tagContainer = document.createElement("div");
-        tagContainer.classList.add("tags");
-        this.box.appendChild(tagContainer);
-
-        let tag = document.createElement("span");
-        tag.classList.add("tag");
-        tag.innerText = "tag1";
-        tagContainer.appendChild(tag);
+        if(this.id)
+            this.box.dataset.id = this.id;
         
         let titleEl   = document.createElement("p");
-        titleEl.contentEditable = true;
         titleEl.spellcheck = false;
         titleEl.classList.add("title");
         this.box.appendChild(titleEl);        
         this.addEventsToTitle(titleEl)
-
-        let propContainer  = document.createElement("div"); 
-        this.propContainer = propContainer
-        propContainer.classList.add("props");
-        this.box.appendChild(propContainer); // gets removed by "set mode" if mode=="point"
 
         let btnContainer = document.createElement("div");
         this.btnContainer = btnContainer
@@ -175,12 +126,36 @@ export default class Box {
         this.box.appendChild(btnContainer);
 
         let menuBtn   = document.createElement("button");
-        // menuBtn.innerHTML = "&#x2630;";
         menuBtn.innerHTML = "&#x22EE;";
-        // menuBtn.innerHTML = ":";
         menuBtn.classList.add("menubtn");
         btnContainer.appendChild(menuBtn);
         this.addEventToMenuButton(menuBtn);
+     
+        let editBtn   = document.createElement("button");
+        this.editBtn  = editBtn;
+        editBtn.innerHTML = "&#x270E;";
+        editBtn.classList.add("editbtn");
+        btnContainer.appendChild(editBtn);
+        editBtn.onclick = (e) => this.swapEdit()
+    }
+
+    createDetailElements() {
+        /*
+        * containers
+        */
+        let tagContainer = document.createElement("div");
+        tagContainer.classList.add("tags");
+        this.box.insertBefore(tagContainer, this.btnContainer);
+        
+        let propContainer  = document.createElement("div"); 
+        this.propContainer = propContainer
+        propContainer.classList.add("props");
+        this.box.insertBefore(propContainer, this.btnContainer); // gets removed by "set mode" if mode=="point"
+
+        let tag = document.createElement("span");
+        tag.classList.add("tag");
+        tag.innerText = "tag1";
+        this.tagContainer.appendChild(tag);
 
         // add prop button
         let addPropBtn = document.createElement("button");
@@ -188,7 +163,7 @@ export default class Box {
         addPropBtn.innerText = "+";
         addPropBtn.classList.add("btninsidebox");
         addPropBtn.classList.add("addprop");
-        btnContainer.appendChild(addPropBtn);
+        this.btnContainer.appendChild(addPropBtn);
         this.addEventToAddButton(addPropBtn);
         
         // fullscreen button
@@ -197,7 +172,7 @@ export default class Box {
         fullscBtn.innerHTML = "&#x26F6;";
         fullscBtn.classList.add("btninsidebox");
         fullscBtn.classList.add("fullscbtn");
-        btnContainer.appendChild(fullscBtn);
+        this.btnContainer.appendChild(fullscBtn);
         fullscBtn.onclick = (e) => this.fullscreen()
         
         // child counter
@@ -206,57 +181,25 @@ export default class Box {
         childCounter.innerText = "+0";
         childCounter.classList.add("childcounter");
         childCounter.classList.add("hidden");
-        btnContainer.appendChild(childCounter);
+        this.btnContainer.appendChild(childCounter);
         childCounter.onclick = (e) => this.fullscreen()
     }
     
-    updateElements() {
-        if(this.mode == "ontop")
-            this.titleEl.contentEditable = false;
-        else
-            this.titleEl.contentEditable = true;
-
-        // ADD PROP BUTTON
-        if(this.mode == "ontop" || this.mode == "point")        
-            this.addPropBtn.classList.add("hidden")
-        else
-            this.addPropBtn.classList.remove("hidden")
-        
-        // FULLSCREEN BUTTON
-        if(this.mode == "prop" && this.propEls.length > 0) {
-            this.fullscBtn.classList.remove("hidden")
-        } else
-            this.fullscBtn.classList.add("hidden");
-        
-        // OTHER BUTTONS
-        if(this.mode == "point") {
-            this.propContainer.classList.add("hidden")
-            this.childCounter.classList.remove("hidden")
-            this.updateChildCounter()
-        } else {
-            this.propContainer.classList.remove("hidden")
-            this.childCounter.classList.add("hidden")
-        }
-        
-        // remove hidden nodes to keep node depth low
-        if(!this.isVisible() && this.box.contains(this.propContainer)) {
-            this.box.removeChild(this.propContainer);
-            console.log("removing props of "+this.title);
-        } else if (this.isVisible() && !this.box.contains(this.propContainer))
-            this.box.insertBefore(this.propContainer, this.btnContainer);
-    }
-
-    createProp() {
+    // creates blank prop - ready to be filled
+    createNewProp() {
         if(this.mode == "point")
             return;
 
-        let newbox;    
-        newbox = new Box(this.propContainer, this.boxmgr.getSmallerModeName(this.mode), this.boxmgr);        
-        this.updateElements();
+        let newbox = new Box({in: this.id || this.tmpid}, this.boxmgr);
+        newbox.loadContent(this.propContainer, "prop");
         return newbox;
     }
-    
-    
+
+    addProp(box) {
+        this.data.props.push(box.id);
+        this.changed();
+    }
+        
     delete() {
         if(this.box.classList.contains("deleted")) { // delete (final)
             let oldparent = this.boxmgr.getOwningBox(this.box.parentNode);
@@ -307,46 +250,91 @@ export default class Box {
         this.box.classList.add("hidden")
     }
 
+    swapEdit() {
+        if(this.titleEl.contentEditable != "true") {
+            this.titleEl.contentEditable = "true";
+            this.editBtn.style.transform = "rotate(180deg) scale(1.6)";
+            this.editBtn.style.transition = "0.5s"
+            this.titleEl.style.cursor = "auto";
+            this.focusTitle();
+            this.titleEl.onclick = '';
+        } else {
+            this.titleEl.style.cursor = "pointer";
+            this.titleEl.contentEditable = "inherit";
+            this.editBtn.style.transform = "";
+            this.titleEl.onclick = (e) => this.popUp();
+        }
+    }
+
     focusTitle() {
         this.titleEl.focus()
     }
 
+    popUp() {
+        // add blur effect
+        this.boxmgr.popups[this.boxmgr.popups.length-1].box.classList.add("blurred");
+
+        // add in-between layer
+        this.layer = document.createElement("div");
+        this.layer.classList.add("layer");
+        document.body.appendChild(this.layer);
+        this.layer.onclick = () => this.popUpVanish();
+        
+        // save box
+        this.boxAsProp = this.box;
+        // save editBtn
+        this.editBtnAsProp = this.editBtn;
+        
+        // create second box
+        this.loadContent(document.body, "popup");
+        
+        this.boxmgr.popups.push(this);
+    }
+
+    popUpVanish() {  
+        // remove blur effect
+        this.boxmgr.popups.pop();
+        this.boxmgr.popups[this.boxmgr.popups.length-1].box.classList.remove("blurred");
+        // remove in-between layer
+        this.layer.remove();
+        // restore box
+        this.box.remove();
+        this.box = this.boxAsProp;
+        this.mode = "prop";
+        // restore editBtn
+        this.editBtn = this.editBtnAsProp;
+    }
+
     fullscreen() {
-        while(this.mode != "default" && !this.box.parentNode.classList.contains("boxes"))
-            this.boxmgr.zoomstepToBox(this);
-        this.highlight()
-    }
+        return;
+        let boxes = document.querySelector(".boxes");
 
-    setEnlargeFlag() {
-        this.enlargeFlag = true;
-    }
+        // remove popup layer and blur effect
+        this.box.classList.remove("blurred");
+        boxes.classList.remove("blurred");
+        if(this.layer)
+            this.layer.remove();
+        
+        // remove other popups
+        //TODO change other popups to ontop boxes
+        for (let i = 1; i < this.boxmgr.popups.length-1; i++) {
+            const popupbox = this.boxmgr.popups[i];
+            popupbox.box.remove();
+            if(popupbox.layer)
+                popupbox.layer.remove();
+        }
 
-    setShrinkFlag() {
-        this.shrinkFlag = true;
-    }
-
-    enlarge() {
-        this.enlargeFlag = false;
-        if(this.ontopLvl == -1)
-            this.mode = this.boxmgr.getLargerModeName(this.mode);
-        if(this.mode == "ontop")
-            this.ontopLvl++;
-    }
-
-    shrink() {
-        this.shrinkFlag = false;
-        if(this.mode == "ontop")
-            this.ontopLvl--;
-        if(this.ontopLvl==-1)
-            this.mode = this.boxmgr.getSmallerModeName(this.mode);
+        boxes.removeChild(boxes.lastChild); //TODO change to ontop box
+        boxes.appendChild(this.box);
+        this.mode = "default"
     }
 
     activateDragAndDrop() {
         new Sortable(this.box.querySelector(".props"), {
             group: "box",
-            delay: 400,
+            delay: 200,
             animation: 400,
-            // delayOnTouchOnly: true,
+            // delayOnTouchOnly: true,  //TODO no drag on buttons
             dragClass: "sortable-drag",
             chosenClass: "sortable-chosen",
             ghostClass: "sortable-ghost",
@@ -379,77 +367,38 @@ export default class Box {
         });
     }
 
+    // convert properties to JSON
     asJSON() {
-        // convert properties to JSON
-        let propids = [];
-        let props = this.propEls;
-        for (let i = 0; i < props.length; i++) {
-            propids.push(props[i].dataset.id || props[i].dataset.tmpid);
-        }
-
-        return {
-            id: this.id,
-            tmpid: this.tmpid,
-            title: this.title,
-            props: propids
-        };
+        if(this.isVisible())
+            this.data.title = this.title;
+        if(!this.data.title)
+            this.data.title = "";
+        return this.data;
     }
 
-    loadContent(newid = (this.id || this.tmpid)) {
-        if(newid[0] == "_") {
-            // if box has a tmpid it has no props to load
-            this.tmpid = newid;
-            return;
-        }
-        if(this.propContainer.querySelector(".box")) {
-            // if propContainer has elements apart from add button
-            // then content has already been loaded
-            this.propEls.forEach(propEl => {
-                if(propEl.classList.contains("box")) {
-                    propEl.classList.remove("hidden")
-                }
-            })
-            return;
-        }
-        
-        this.id    = newid;
-        this.removetmpid();
-        
-        let json = this.boxmgr.requestBoxData(newid);
-        if(json) {
-            // load title
-            this.title = json.title;
-
-            
-            this.updateChildCounter(json.props.length)
-
-            // load props i.e. add containers for constructors of new boxes
-            json.props.forEach(propid => {            
-                if(this.mode != "point") {
-                    let newbox = this.createProp();
-                    newbox.loadContent(propid);
-                }
+    // creates new elements, loads and sets title and loads props into propContainer
+    loadContent(container, mode = this.mode || "default") { //TODO other name for function
+        this.createBasicElements(container);
+        if(mode)
+            this.mode = mode;
+        if(this.mode == "default" || this.mode == "popup") {
+            this.createDetailElements();
+            // load childrens content
+            let filterprops = false;
+            this.data.props.forEach(propid => {
+                let propbox;
+                if(propid[0] == "_") { // support for old versions ("props":["_tmpid123"])
+                    propbox     = new Box({in: this.id, tmpid: propid}, this.boxmgr)
+                    filterprops = true;
+                } else
+                    propbox = this.boxmgr.getBox(propid);
+                propbox.loadContent(this.propContainer, "prop");
             });
+            if(filterprops) // remove for old propids ("props":["_tmpid123"])
+                this.data.props = this.data.props.filter(propid => propid[0] != "_");
         }
-
-        // const options = { //for fetch
-        //     method: 'GET',
-        //     headers: {"Content-Type": "application/json"}
-        // }
-        // fetch('/api/box/'+id, options) // GET
-        //     .then((res) => res.json())
-        //     .then(json => {
-        //         this.id    = id;
-        //         this.removetmpid();
-
-        //         // load title
-        //         this.title = json.title;
-        //         // load props i.e. add containers for constructors of new boxes
-        //         json.props.forEach(propid => {
-        //             let newbox = this.createProp();
-        //             newbox.loadContent(propid);
-        //         });
-        //     });
+        // load own content
+        this.title = this.data.title;
     }
 
     updateChildCounter(count = this.propEls.length) {
@@ -468,9 +417,8 @@ export default class Box {
     * B U T T O N S
     */
     onAddButtonClick(e) {      
-        let newbox = this.createProp();
+        let newbox = this.createNewProp();
         newbox.focusTitle();
-        this.changed();
     }
 
     addEventToAddButton(addProp) {
@@ -495,14 +443,17 @@ export default class Box {
         // navigate to ontop boxes
         titleEl.onclick =
             (e) => {
-                if(this.mode == "ontop")
+                if(this.mode == "prop")
+                    this.popUp();
+                else if(this.mode == "popup")
                     this.fullscreen();
             };
         
         // notify saver
         titleEl.oninput =
             (e) => {
-                console.log(e);
+                if(this.mode == "popup")
+                    this.boxAsProp.querySelector(".title").innerHTML = e.target.innerHTML;
                 this.changed();
             };
 

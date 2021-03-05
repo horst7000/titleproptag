@@ -9,10 +9,10 @@ body {
 }
 
 button {
-    opacity: 0.3;
+    /* opacity: 0.3; */
     border: none;
     outline: none;
-    color: lightgrey;
+    color: #707070;
     font-size: 1.09rem;
     cursor: pointer;
     user-select: none;
@@ -24,12 +24,21 @@ p {
     margin-right: 0.9rem;
     outline: none;
 }
-p:focus {
+/* p:focus {
     background-color: #133;
-}
+} */
 
 .hidden, .tags {
     display: none !important;
+}
+
+.blurred {
+    filter: blur(2px);
+}
+
+.boxes {
+    width: 100%;
+    height: 90%;
 }
 
 /** BOX */
@@ -55,15 +64,30 @@ p:focus {
     font-size: 1.16rem;
     background-color: #17202b;
 }
+.popup-box {
+    position: absolute;
+    top: 5vw;
+    left: 5vw;
+    width: 90vw;
+    min-height: 5rem;
+    margin: 0;
+    color: #044;
+    font-size: 1.16rem;
+    background-color: #eefefe;
+}
 .prop-box {
     display: inline-block;
     width: 48%;
     margin: 2px;
-    color: #ccc;
-    background-color: #131c26;
+    color: #044;
+    background-color: #A7CDE7;
     font-weight: 600;
     font-size: 0.85rem;
     vertical-align: top;
+}
+.popup-box .prop-box {
+    color: #044;
+    background-color: #eee;
 }
 .point-box {
     border-top-color: transparent;
@@ -130,12 +154,12 @@ p:focus {
     min-height: 0.6rem;
     font-weight: inherit;
     font-size: inherit;
-}
-.ontop-box > .title {    
     cursor: pointer;
+}
+.ontop-box > .title {        
     text-align: center;
 }
-.default-box > .title {
+.default-box > .title, .popup-box > .title {
     text-align: center;
 }
 .prop-box > .title {
@@ -188,11 +212,27 @@ p:focus {
     right: -4px;
     bottom: 0;
 }
+.editbtn{
+    position: absolute;
+    right: -2px;
+    top: 10px;
+    font-size: 0.8rem;
+}
 .childcounter {
     position: absolute;
     right:   -3px;
     bottom:  -1px;
     font-size: 0.5rem;
+}
+
+.layer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    opacity: 0.08;
 }
 
 @media only screen and (min-width: 600px) {    

@@ -1,10 +1,11 @@
 export default class {
-    constructor(collection) {
+    constructor(collection, boxmgr) {
         // this.towatch   = [];
         this.toinsert  = new Set();
         this.toupdate  = new Set();
-        this.collection = collection;
+        this.collection = collection; // {shareid:"",defaultboxid:""}
         this.startAutoSave();
+        this.boxmgr = boxmgr;
     }
 
     get shareid() {
@@ -17,11 +18,6 @@ export default class {
             this.insertSoon(box)
         else
             this.updateSoon(box)
-    }
-
-    insertSoonIfNew(box) {
-        if(!box.id)
-            this.insertSoon(box)
     }
 
     insertSoon(box) {
@@ -59,7 +55,7 @@ export default class {
     save() {
         //! insert must be sent first to update ids for .asJSON in update
         let insertdata = this.prepareInsertData();
-        if(insertdata.length > 0) {
+        if(insertdata.length > 0 && !this.inserting) {
             this.fetchPostBoxes(insertdata); //calls save() again
         } else {
             let updatedata = [];
@@ -69,7 +65,7 @@ export default class {
             if(updatedata.length > 0) {
                 this.fetchPatchBoxes(updatedata);            
                 //TODO detect collection change instead of updating with each boxchange
-                this.fetchPutCollection();
+                //this.fetchPutCollection();
             }
         }
 
@@ -113,6 +109,7 @@ export default class {
     }
 
     fetchPostBoxes(data) {     // insert new boxes
+        this.inserting = true;
         console.log("saving (insert boxes)...");
         const options = { //for fetch
             method: 'POST',
@@ -127,13 +124,18 @@ export default class {
                     this.toinsert.forEach(oldbox => {
                         if(oldbox.tmpid == resbox.tmpid) {
                             this.toinsert.delete(oldbox);
-                            if(oldbox.tmpid == this.collection.defaultboxid)
+                            if(!this.collection.defaultboxid) {
                                 this.collection.defaultboxid = resbox._id;
+                                this.fetchPutCollection();
+                            }
                             oldbox.replacetmpid(resbox._id);
-                            this.updateSoon(oldbox);
+                            // if box is new prop add id to parent
+                            if(oldbox.data.in)
+                                this.boxmgr.getBox(oldbox.data.in).addProp(oldbox);
                         }
                     });
                 });
+                this.inserting = false;
                 this.save();
             });
     }
