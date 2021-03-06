@@ -35,6 +35,7 @@ else {
     defaultbox.onAddButtonClick();
 }
 
+openBoxesInPath();
 //setTimeout(() => console.log(boxmgr.allboxes),1000)
 
 /*
@@ -67,6 +68,29 @@ function fetchCollection() {
         });
 }
 
+function openBoxesInPath() {
+    let pathids = window.location.pathname.split("/");
+    if(pathids.length < 3) // path="/shareid"
+        while (boxmgr.popups.length > 1)
+            boxmgr.popups[boxmgr.popups.length-1].popUpVanish(true);
+
+    for (let i = 2; i < pathids.length; i++) {
+        const id  = pathids[i];
+        // cut off different ids from popups (popupVanish)
+        while (boxmgr.popups.length > i-1 && boxmgr.popups[i-1].id != pathids[i])
+                boxmgr.popups[boxmgr.popups.length-1].popUpVanish(true);
+        
+        // trailing "/" -> id=""
+        if(!id) continue;
+        // popup[i-1] == path[i]
+        if(boxmgr.popups.length > i-1 && boxmgr.popups[i-1].id == id) continue;
+
+        // open popups from pathids
+        boxmgr.getBox(id).popUp(true);
+    }
+}
+
+
 /*
  * 
  * 
@@ -77,8 +101,8 @@ window.addEventListener('keydown', (e) => {
     if (e.key == 13 || e.keyCode == 13) { // Enter
         e.preventDefault();
         if(e.target.classList.contains("title")) {
-            let titleEl = e.target;
-            let box     = boxmgr.getBox(titleEl)
+            const titleEl = e.target;
+            const box     = boxmgr.getBox(titleEl)
 
             if(box.mode != "point")
                 box.onAddButtonClick();
@@ -87,3 +111,7 @@ window.addEventListener('keydown', (e) => {
         }
     }
 })
+
+window.onpopstate = (e) => {
+    openBoxesInPath();
+};

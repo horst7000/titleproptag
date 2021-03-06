@@ -296,10 +296,10 @@ export default class Box {
         this.swapEdit();
     }
 
-    popUp() {
+    popUp(nohistory = false) {
         // add blur effect
         this.boxmgr.popups[this.boxmgr.popups.length-1].box.classList.add("blurred");
-
+        
         // add in-between layer
         this.layer = document.createElement("div");
         this.layer.classList.add("layer");
@@ -313,18 +313,31 @@ export default class Box {
         
         // create second box
         this.loadContent(document.body, "popup");
-        
+        // move down a bit
+        this.box.style.top = 1+1.5*this.boxmgr.popups.length+"em"
+                
+        // history
         this.boxmgr.popups.push(this);
+        if(!nohistory)
+            history.pushState({},"eab", "/"+this.boxmgr.getPopupPath());
     }
 
-    popUpVanish() {  
+    popUpVanish(nohistory = false) {          
         // remove blur effect
         this.boxmgr.popups.pop();
         this.boxmgr.popups[this.boxmgr.popups.length-1].box.classList.remove("blurred");
+
+        //history    
+        if(!nohistory)
+            history.pushState({},"eab", "/"+this.boxmgr.getPopupPath());
+
         // remove in-between layer
         this.layer.remove();
-        // restore box
+
+        
+        // restore box        
         this.box.remove();
+        if(!this.boxAsProp) return; // deleted box //TODO handle correctly
         this.box = this.boxAsProp;
         this.mode = "prop";
         // restore editBtn
@@ -360,7 +373,7 @@ export default class Box {
             group: "box",
             delay: 400,
             animation: 400,
-            delayOnTouchOnly: true,  //TODO no drag on buttons
+            delayOnTouchOnly: true,
             fallbackTolerance: 4,
             //touchStartThreshold: 5,
             dragClass: "sortable-drag",
@@ -369,15 +382,13 @@ export default class Box {
             swapThreshold: 0.07,
             // direction: (this.mode == "prop") ? "vertical" : "horizontal",
 
-            onChoose: (ev) => {
+            onChoose: (ev) => { // as soon as delay ends
                 if(ev.originalEvent.pointerType != "mouse") {
                     let box = this.boxmgr.getBox(ev.item.dataset.id);
                     this.boxmgr.openMenu(box);
                 }
-                console.log("onChoose");        
             },
             onStart: (ev) => {
-                console.log("onStart");
                 this.boxmgr.closeMenu();
                 // this.boxmgr.prepareForDrop(ev);
                 // let draggedBox  = this.boxmgr.getOwningBox(ev.item);
@@ -393,8 +404,7 @@ export default class Box {
                 //     this.boxmgr.getOwningBox(ev.from).changed();
                 // }
             },
-            onMove: (ev) => {
-                console.log("onMove");
+            onMove: (ev) => { // when element order has changed
                 // this.boxmgr.onDropEnd();          
                 // this.boxmgr.prepareForDrop(ev);
                 // let draggedBox  = this.boxmgr.getOwningBox(ev.dragged);

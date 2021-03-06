@@ -7,6 +7,7 @@ export default class {
         this.allboxes   = new Map();
         this.popups     = [{box: document.querySelector(".boxes")}];
         this.JSONcollectionData;
+        this.shareid = collection.shareid;
 
         this.saver = new Saver(collection, this);
 
@@ -65,6 +66,15 @@ export default class {
             return this.getBox(el.dataset.id || el.dataset.tmpid) || {box: el}
         else
             return document.body
+    }
+
+    getPopupPath() {        
+        let ids = this.shareid+"/";
+        for (let i = 1; i < this.popups.length; i++) {
+            const popupbox = this.popups[i];
+            ids += popupbox.id+"/";
+        }
+        return ids;
     }
 
     /*

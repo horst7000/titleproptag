@@ -38,7 +38,7 @@ app.route('/').get( (req, res) =>  {
     }
 );
 
-app.route('/:shareid/').get( (req, res) =>  {
+app.route(['/:shareid/','/:shareid/*']).get( (req, res) =>  {
         dbCollections.findOne({shareid: req.params.shareid}, (err, coldoc) => {
             if(coldoc) {
                 dbBoxes.find({shareid: req.params.shareid}, (err,boxdoc) => {
@@ -54,15 +54,15 @@ app.route('/:shareid/').get( (req, res) =>  {
     }
 );
 
-app.route('/:shareid/:title').get( (req, res) =>  {
-    dbBoxes.find({shareid: req.params.shareid, title: req.params.title}, (err, doc) => {
-        if(doc.length == 0) 
-            res.redirect('/:shareid');
-        else
-            res.render('index', {doc: doc});
-    });
-    }
-);
+// app.route('/:shareid/:title').get( (req, res) =>  {
+//     dbBoxes.find({shareid: req.params.shareid, title: req.params.title}, (err, doc) => {
+//         if(doc.length == 0) 
+//             res.redirect('/:shareid');
+//         else
+//             res.render('index', {doc: doc});
+//     });
+//     }
+// );
 
 
 
