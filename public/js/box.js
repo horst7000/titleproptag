@@ -267,25 +267,33 @@ export default class Box {
 
     swapEdit() {
         if(this.titleEl.contentEditable != "true") {
-            this.titleEl.contentEditable    = "true";
-            this.editBtn.style.transform    = "rotate(180deg) scale(1.6)";
-            this.editBtn.style.transition   = "0.5s"
-            this.titleEl.style.cursor       = "auto";
-            this.titleEl.style.userSelect   = "inherit";
-            this.focusTitle();
-            this.box.onclick = '';
-            this.box.oncontextmenu = (e) => e.stopPropagation();
+            this.startEdit();
         } else {
-            this.titleEl.style.cursor       = "pointer";
-            this.titleEl.style.userSelect   = "none";
-            this.titleEl.contentEditable    = "inherit";
-            this.editBtn.style.transform    = "";
-            this.addEventsToBox();
+            this.stopEdit();
         }
+    }
+    
+    startEdit() {
+        this.titleEl.contentEditable    = "true";
+        this.editBtn.style.transform    = "rotate(180deg) scale(1.6)";
+        this.editBtn.style.transition   = "0.5s"
+        this.titleEl.style.cursor       = "auto";
+        this.titleEl.style.userSelect   = "inherit";
+        this.titleEl.focus();
+        this.box.onclick = '';
+        this.box.oncontextmenu = (e) => e.stopPropagation();
+    }
+
+    stopEdit() {
+        this.titleEl.style.cursor       = "pointer";
+        this.titleEl.style.userSelect   = "none";
+        this.titleEl.contentEditable    = "inherit";
+        this.editBtn.style.transform    = "";
+        this.addEventsToBox();
     }
 
     focusTitle() {
-        this.titleEl.focus()
+        this.swapEdit();
     }
 
     popUp() {
@@ -493,6 +501,12 @@ export default class Box {
     }
 
     addEventsToTitle(titleEl) {
+        titleEl.onblur =
+            (e) => {
+                if(e.relatedTarget && e.relatedTarget == this.editBtn) return;
+                this.stopEdit();
+            };
+
         // notify saver
         titleEl.oninput =
             (e) => {
