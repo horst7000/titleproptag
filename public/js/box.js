@@ -274,6 +274,7 @@ export default class Box {
             this.titleEl.style.userSelect = "inherit";
             this.focusTitle();
             this.box.onclick = '';
+            this.box.oncontextmenu = (e) => e.stopPropagation();
         } else {
             this.titleEl.style.cursor = "pointer";
             this.titleEl.contentEditable = "inherit";
