@@ -267,18 +267,19 @@ export default class Box {
 
     swapEdit() {
         if(this.titleEl.contentEditable != "true") {
-            this.titleEl.contentEditable = "true";
-            this.editBtn.style.transform = "rotate(180deg) scale(1.6)";
-            this.editBtn.style.transition = "0.5s"
-            this.titleEl.style.cursor = "auto";
-            this.titleEl.style.userSelect = "inherit";
+            this.titleEl.contentEditable    = "true";
+            this.editBtn.style.transform    = "rotate(180deg) scale(1.6)";
+            this.editBtn.style.transition   = "0.5s"
+            this.titleEl.style.cursor       = "auto";
+            this.titleEl.style.userSelect   = "inherit";
             this.focusTitle();
             this.box.onclick = '';
             this.box.oncontextmenu = (e) => e.stopPropagation();
         } else {
-            this.titleEl.style.cursor = "pointer";
-            this.titleEl.contentEditable = "inherit";
-            this.editBtn.style.transform = "";
+            this.titleEl.style.cursor       = "pointer";
+            this.titleEl.style.userSelect   = "none";
+            this.titleEl.contentEditable    = "inherit";
+            this.editBtn.style.transform    = "";
             this.addEventsToBox();
         }
     }
