@@ -101,10 +101,12 @@ export default class Box {
     
     changed() {
         if(this.isVisible()) {
-            let propids = [];
-            this.propEls.forEach((el)=>propids.push(el.dataset.id))
-            this.data.props = propids;
             this.data.title = this.title;
+            if(this.propContainer) {
+                let propids = [];
+                this.propEls.forEach((el)=>propids.push(el.dataset.id))
+                this.data.props = propids;
+            }
         }
 
         this.boxmgr.onBoxChange(this);
