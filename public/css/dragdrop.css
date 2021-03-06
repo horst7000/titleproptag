@@ -5,7 +5,7 @@
 .sortable-chosen { /* placeholder indicates where item will be dropped. starts as soon as delay is over */
     opacity: 0.3;
     transition: unset;
-    padding: 4px;
+    /* padding: 4px; */
     background-color: #17a59a;
     transform: translate(-2px, -2px);
 }

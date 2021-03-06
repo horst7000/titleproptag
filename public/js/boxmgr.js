@@ -1,4 +1,5 @@
 import Box from "./box.js"
+import Boxmenu from "./boxmenu.js";
 import Saver from "./saver.js"
 
 export default class {
@@ -8,6 +9,8 @@ export default class {
         this.JSONcollectionData;
 
         this.saver = new Saver(collection, this);
+
+        this.menu  = new Boxmenu();
         
         // setInterval(() => {
         //     this.allboxes.forEach((value,key) => console.log(value));
@@ -94,6 +97,13 @@ export default class {
     /*
     * interaction
     */
+    openMenu(box) {
+        this.menu.open(box);
+    }
+    closeMenu() {
+        this.menu.hide();
+    }
+
     changeMode(box, mode) { /* changes box mode and mode of children */
         box.mode = mode;
         box.loadContent()

@@ -1,9 +1,8 @@
-import BoxMenu from "./boxmenu.js"
-
 export default class Box {
     constructor(data, boxmgr) {
-        this.data   = data || {};
-        this.boxmgr = boxmgr;
+        this.data       = data || {};
+        this.data.title = this.data.title || "";
+        this.boxmgr     = boxmgr;
         if(!this.id) {
             this.data.tmpid = this.data.tmpid || randomId();
             this.data.props = [];
@@ -101,6 +100,13 @@ export default class Box {
     }
     
     changed() {
+        if(this.isVisible()) {
+            let propids = [];
+            this.propEls.forEach((el)=>propids.push(el.dataset.id))
+            this.data.props = propids;
+            this.data.title = this.title;
+        }
+
         this.boxmgr.onBoxChange(this);
     }
 
@@ -113,6 +119,7 @@ export default class Box {
         container.appendChild(this.box);
         if(this.id)
             this.box.dataset.id = this.id;
+        this.addEventsToBox();
         
         let titleEl   = document.createElement("p");
         titleEl.spellcheck = false;
@@ -128,7 +135,7 @@ export default class Box {
         let menuBtn   = document.createElement("button");
         menuBtn.innerHTML = "&#x22EE;";
         menuBtn.classList.add("menubtn");
-        btnContainer.appendChild(menuBtn);
+        // btnContainer.appendChild(menuBtn);
         this.addEventToMenuButton(menuBtn);
      
         let editBtn   = document.createElement("button");
@@ -136,7 +143,7 @@ export default class Box {
         editBtn.innerHTML = "&#x270E;";
         editBtn.classList.add("editbtn");
         btnContainer.appendChild(editBtn);
-        editBtn.onclick = (e) => this.swapEdit()
+        this.addEventToEditButton(editBtn);
     }
 
     createDetailElements() {
@@ -182,7 +189,9 @@ export default class Box {
         childCounter.classList.add("childcounter");
         childCounter.classList.add("hidden");
         this.btnContainer.appendChild(childCounter);
-        childCounter.onclick = (e) => this.fullscreen()
+        childCounter.onclick = (e) => this.fullscreen();
+
+        this.activateDragAndDrop();
     }
     
     // creates blank prop - ready to be filled
@@ -207,18 +216,22 @@ export default class Box {
             oldparent.changed();
         } else { 
             this.box.classList.add("deleted"); // delete (restorable)
-            this.tmptitle = this.title;
+            let tmptitle = this.title;
             this.title = "↺ wiederherstellen";
             this.titleEl.contentEditable = false;
-            // boxmenu doesnt hide on delete click. It stays open and css class "deleted" hides all buttons
-            // except delbtn.
+            this.boxmgr.closeMenu();
+            let delbtn = document.createElement("button");
+            delbtn.innerHTML = "&times;";
+            delbtn.classList.add("delbtn");
+            delbtn.onclick = () => this.delete();
+            this.box.appendChild(delbtn);
 
-            this.titleEl.onclick = (e) => { // restore
+            this.box.onclick = (e) => { // restore
+                e.stopPropagation();
                 this.box.classList.remove("deleted");
-                this.title = this.tmptitle;
-                this.titleEl.contentEditable = true;
-                this.addEventsToTitle(this.titleEl); // resets this.titleEl.onclick
-                this.boxmenu.hide();
+                this.title = tmptitle;
+                this.addEventsToBox(this.titleEl); // resets this.titleEl.onclick
+                delbtn.remove();
             };
         }
     }
@@ -256,13 +269,14 @@ export default class Box {
             this.editBtn.style.transform = "rotate(180deg) scale(1.6)";
             this.editBtn.style.transition = "0.5s"
             this.titleEl.style.cursor = "auto";
+            this.titleEl.style.userSelect = "inherit";
             this.focusTitle();
-            this.titleEl.onclick = '';
+            this.box.onclick = '';
         } else {
             this.titleEl.style.cursor = "pointer";
             this.titleEl.contentEditable = "inherit";
             this.editBtn.style.transform = "";
-            this.titleEl.onclick = (e) => this.popUp();
+            this.addEventsToBox();
         }
     }
 
@@ -332,47 +346,54 @@ export default class Box {
     activateDragAndDrop() {
         new Sortable(this.box.querySelector(".props"), {
             group: "box",
-            delay: 200,
+            delay: 400,
             animation: 400,
-            // delayOnTouchOnly: true,  //TODO no drag on buttons
+            delayOnTouchOnly: true,  //TODO no drag on buttons
+            fallbackTolerance: 4,
+            //touchStartThreshold: 5,
             dragClass: "sortable-drag",
             chosenClass: "sortable-chosen",
             ghostClass: "sortable-ghost",
-            swapThreshold: 0.1,
+            swapThreshold: 0.07,
             // direction: (this.mode == "prop") ? "vertical" : "horizontal",
 
+            onChoose: (ev) => {
+                if(ev.originalEvent.pointerType != "mouse") {
+                    let box = this.boxmgr.getBox(ev.item.dataset.id);
+                    this.boxmgr.openMenu(box);
+                }
+                console.log("onChoose");        
+            },
             onStart: (ev) => {
-                this.boxmgr.prepareForDrop(ev);
-                let draggedBox  = this.boxmgr.getOwningBox(ev.item);
-                draggedBox.propContainer.classList.remove("display-block");
+                console.log("onStart");
+                this.boxmgr.closeMenu();
+                // this.boxmgr.prepareForDrop(ev);
+                // let draggedBox  = this.boxmgr.getOwningBox(ev.item);
+                // draggedBox.propContainer.classList.remove("display-block");
             },
             onEnd: (ev) => {
-                this.boxmgr.onDropEnd();
-                if(ev.from != ev.to) {
-                    this.boxmgr.getOwningBox(ev.from).changed();
-                    this.boxmgr.getOwningBox(ev.to).changed();
-                } else if(ev.oldIndex != ev.newIndex) {
-                    this.boxmgr.getOwningBox(ev.from).changed();
-                }
+                this.changed();
+                // this.boxmgr.onDropEnd();
+                // if(ev.from != ev.to) {
+                //     this.boxmgr.getOwningBox(ev.from).changed();
+                //     this.boxmgr.getOwningBox(ev.to).changed();
+                // } else if(ev.oldIndex != ev.newIndex) {
+                //     this.boxmgr.getOwningBox(ev.from).changed();
+                // }
             },
             onMove: (ev) => {
-                // if(ev.to != ev.from) {
-                    this.boxmgr.onDropEnd();          
-                    this.boxmgr.prepareForDrop(ev);
-                // }
-                let draggedBox  = this.boxmgr.getOwningBox(ev.dragged);
-                let toBox       = this.boxmgr.getOwningBox(ev.to);
-                this.boxmgr.changeMode(draggedBox, this.boxmgr.getSmallerModeName(toBox.mode));
+                console.log("onMove");
+                // this.boxmgr.onDropEnd();          
+                // this.boxmgr.prepareForDrop(ev);
+                // let draggedBox  = this.boxmgr.getOwningBox(ev.dragged);
+                // let toBox       = this.boxmgr.getOwningBox(ev.to);
+                // this.boxmgr.changeMode(draggedBox, this.boxmgr.getSmallerModeName(toBox.mode));
             },
         });
     }
 
     // convert properties to JSON
     asJSON() {
-        if(this.isVisible())
-            this.data.title = this.title;
-        if(!this.data.title)
-            this.data.title = "";
         return this.data;
     }
 
@@ -439,16 +460,35 @@ export default class Box {
             };
     }
 
-    addEventsToTitle(titleEl) {
-        // navigate to ontop boxes
-        titleEl.onclick =
+    addEventToEditButton(editBtn) {
+        editBtn.onclick =
             (e) => {
-                if(this.mode == "prop")
+                e.stopPropagation();
+                this.swapEdit();
+            }
+    }
+
+    addEventsToBox() {
+        this.box.oncontextmenu =
+            (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.boxmgr.openMenu(this);
+            };
+            
+        this.box.onclick =
+            (e) => {
+                e.stopPropagation();
+                if(this.boxmgr.menu.isVisible())
+                    this.boxmgr.closeMenu();
+                else if(this.mode == "prop")
                     this.popUp();
                 else if(this.mode == "popup")
                     this.fullscreen();
             };
-        
+    }
+
+    addEventsToTitle(titleEl) {
         // notify saver
         titleEl.oninput =
             (e) => {

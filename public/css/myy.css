@@ -126,20 +126,10 @@ p {
 .deleted .btns {
     display: none;
 }
-/* hide buttons inside menu except delbtn */
-.deleted .bm-fullscbtn {
-    display: none;
-}
-.deleted .bm-delbtn {
-    margin: unset;
-}
-.deleted .boxmenu {
-    top: 0;
-    right: 0;
-    border: 0;    
-    background-color: transparent;
-}
-.deleted .bm-btn {    
+.delbtn {
+    position: absolute;    
+    right: -2px;
+    top: -4px;
     color: #555;
 }
 
@@ -155,6 +145,7 @@ p {
     font-weight: inherit;
     font-size: inherit;
     cursor: pointer;
+    user-select: none;
 }
 .ontop-box > .title {        
     text-align: center;
