@@ -54,10 +54,6 @@ export default class Box {
 
     get title() {            
         if(this.box)
-            // if(this.titleEl.children.length > 0) {
-            //     let math = MathJax.startup.document.getMathItemsWithin(this.titleEl)[0];
-            //     return math.start.delim + math.math + math.end.delim
-            // } else
             return this.titleEl.textContent;
         else
             return this.tmpid || this.id;
@@ -284,7 +280,6 @@ export default class Box {
         MathJax.startup.document.getMathItemsWithin([this.titleEl]).forEach(math => {
             math.removeFromDocument(true);
         });
-        console.log(MathJax.startup.document.getMathItemsWithin([this.titleEl]).length);
         this.titleEl.contentEditable    = "true";
         this.editBtn.style.transform    = "rotate(180deg) scale(1.6)";
         this.editBtn.style.transition   = "0.5s"
@@ -503,7 +498,7 @@ export default class Box {
         }
         // load own content
         this.title = this.data.title;
-        MathJax.typeset && MathJax.typeset();
+        MathJax && MathJax.typeset && MathJax.typeset();
     }
 
     updateChildCounter(count = this.propEls.length) {
