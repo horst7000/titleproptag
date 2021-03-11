@@ -13,6 +13,16 @@ export default class {
         this.menu  = new Boxmenu();
         this._fullscreen = false;
         this.resetPopups();
+
+        // fullscreen & default buttons
+        this.fullscBtn = document.createElement("button");
+        this.fullscBtn.innerHTML = "&#x26F6;";
+        this.fullscBtn.classList.add("closefullscbtn");
+        this.closeFullscBtn = document.createElement("button");
+        this.closeFullscBtn.innerHTML = "&#x2338;";
+        this.closeFullscBtn.classList.add("closefullscbtn");
+        this.addFullscreenButton();
+        
         // setInterval(() => {
         //     this.allboxes.forEach((value,key) => console.log(value));
         //     console.log("\n");
@@ -128,10 +138,12 @@ export default class {
         this.menu.hide();
     }
 
+    addFullscreenButton() {
+        document.body.append(this.fullscBtn);
+        this.fullscBtn.onclick = () => this.fullscreen();
+    }
+    
     addCloseFullscreenButton() {
-        this.closeFullscBtn = document.createElement("button");
-        this.closeFullscBtn.innerHTML = "&#x2338;";
-        this.closeFullscBtn.classList.add("closefullscbtn");
         document.body.append(this.closeFullscBtn);
         this.closeFullscBtn.onclick = () => this.closeFullscreen();
     }
@@ -139,11 +151,13 @@ export default class {
     fullscreen() {
         if(this._fullscreen) return;
         this._fullscreen = true;
+        this.fullscBtn.remove();
         this.addCloseFullscreenButton();
     }
 
     closeFullscreen(nohistory = false) {
         this.closeFullscBtn.remove();
+        this.addFullscreenButton();
         let topopup = [];
         for (let i = document.querySelector(".boxes").children.length-1; i >= 0; i--) {
             const boxEl = document.querySelector(".boxes").children[i];

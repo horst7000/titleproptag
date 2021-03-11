@@ -372,6 +372,9 @@ export default class Box {
         // save editBtn
         this.editBtnAsProp = this.editBtn;
         
+        // remove defaultbox fullscreenbutton
+        this.boxmgr.fullscBtn.remove();
+
         // create second box
         this.loadContent(document.body, "popup");
         // move down a bit
@@ -399,6 +402,9 @@ export default class Box {
         this.prop();
         // restore editBtn
         this.editBtn = this.editBtnAsProp;
+        
+        // add defaultbox fullscreenbutton
+        this.boxmgr.popups.length == 1 && this.boxmgr.addFullscreenButton();
     }
     
     prop() {
