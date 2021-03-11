@@ -176,13 +176,15 @@ export default class Box {
         this.addEventToAddButton(addPropBtn);
         
         // fullscreen button
-        let fullscBtn  = document.createElement("button");
-        this.fullscBtn = fullscBtn
-        fullscBtn.innerHTML = "&#x26F6;";
-        fullscBtn.classList.add("btninsidebox");
-        fullscBtn.classList.add("fullscbtn");
-        this.btnContainer.appendChild(fullscBtn);
-        fullscBtn.onclick = (e) => this.fullscreen()
+        if(this.mode == "popup") {
+            let fullscBtn  = document.createElement("button");
+            this.fullscBtn = fullscBtn
+            fullscBtn.innerHTML = "&#x26F6;";
+            fullscBtn.classList.add("btninsidebox");
+            fullscBtn.classList.add("fullscbtn");
+            this.btnContainer.appendChild(fullscBtn);
+            this.addEventToFullscreenButton(fullscBtn);
+        }
         
         // child counter
         let childCounter  = document.createElement("button");
@@ -213,7 +215,7 @@ export default class Box {
         
     delete() {
         if(this.box.classList.contains("deleted")) { // delete (final)
-            let oldparent = this.boxmgr.getOwningBox(this.box.parentNode);
+            let oldparent = this.boxmgr.getBox(this.box.parentNode);
             this.box.parentNode.removeChild(this.box);
             oldparent.changed();
         } else { 
@@ -280,8 +282,10 @@ export default class Box {
         this.titleEl.style.cursor       = "auto";
         this.titleEl.style.userSelect   = "inherit";
         this.titleEl.focus();
-        this.box.onclick = '';
+        this.box.onclick = (e) => e.stopPropagation();
         this.box.oncontextmenu = (e) => e.stopPropagation();
+        // if(this.boxmgr.latestPopup.layer)
+        //     this.boxmgr.latestPopup.layer.onclick = (e) => e.stopPropagation();
     }
 
     stopEdit() {
@@ -289,16 +293,73 @@ export default class Box {
         this.titleEl.style.userSelect   = "none";
         this.titleEl.contentEditable    = "inherit";
         this.editBtn.style.transform    = "";
-        this.addEventsToBox();
+        this.addEventsToBox();        
     }
 
     focusTitle() {
         this.swapEdit();
     }
 
+    ontop() {
+        // assume box was "default"
+        this.propContainer.classList.add("hidden");
+        this.btnContainer.classList.add("hidden"); 
+        this.box.style.minHeight = "1rem";
+        this.mode = "ontop";
+    }
+
+    default() {
+        if(this.mode == "popup") {
+            this.box.classList.remove("blurred");
+            this.layer.remove();
+            this.boxAsProp.classList.add("selected");
+            document.querySelector(".boxes").appendChild(this.box);
+            this.box.querySelector(".fullscbtn").remove();
+            this.box.style.top = "";
+        } else if(this.mode == "ontop") {
+            this.propContainer.classList.remove("hidden");
+            this.btnContainer.classList.remove("hidden"); 
+            this.box.style.minHeight = "";
+        }
+        this.mode = "default";
+    }
+
+    fullscreen(nohistory = false) {
+        // assume box is "popup" or "default" or "ontop"
+        let boxes = document.querySelector(".boxes");
+
+        if(this.mode == "default" || this.mode == "ontop") {
+            let i = boxes.children.length-1;
+            while(boxes.children[i] != this.box) {
+                this.boxmgr.getBox(boxes.children[i]).prop();
+                i--;
+            }
+        } else { // mode == "popup"
+            // remove popup layer and blur effect
+            boxes.classList.remove("blurred");
+
+            // change other popups to ontop
+            for (let i = 1; i < this.boxmgr.popups.length; i++) {
+                this.boxmgr.popups[i].default();                
+            }
+            this.boxmgr.resetPopups();
+        }
+
+        // default to ontop
+        for (let i = 0; i < boxes.children.length-2; i++) {
+            this.boxmgr.getBox(boxes.children[i]).ontop();
+        }
+
+
+        this.mode = "default"
+        if(!nohistory)
+            history.pushState({},"eab", "/"+this.boxmgr.getPath());
+        this.boxmgr.fullscreen();
+    }
+
     popUp(nohistory = false) {
         // add blur effect
-        this.boxmgr.popups[this.boxmgr.popups.length-1].box.classList.add("blurred");
+        this.boxmgr.latestPopup.box.classList.add("blurred");
         
         // add in-between layer
         this.layer = document.createElement("div");
@@ -314,58 +375,38 @@ export default class Box {
         // create second box
         this.loadContent(document.body, "popup");
         // move down a bit
-        this.box.style.top = 1+1.5*this.boxmgr.popups.length+"em"
+        this.box.style.top = 1+1.5*this.boxmgr.popups.length+"rem"
                 
         // history
         this.boxmgr.popups.push(this);
         if(!nohistory)
-            history.pushState({},"eab", "/"+this.boxmgr.getPopupPath());
+            history.pushState({},"eab", "/"+this.boxmgr.getPath());
     }
 
-    popUpVanish(nohistory = false) {          
+    popUpVanish(nohistory = false) {
         // remove blur effect
         this.boxmgr.popups.pop();
-        this.boxmgr.popups[this.boxmgr.popups.length-1].box.classList.remove("blurred");
+        this.boxmgr.latestPopup.box.classList.remove("blurred");
 
         //history    
         if(!nohistory)
-            history.pushState({},"eab", "/"+this.boxmgr.getPopupPath());
+            history.pushState({},"eab", "/"+this.boxmgr.getPath());
 
         // remove in-between layer
         this.layer.remove();
-
         
         // restore box        
-        this.box.remove();
-        if(!this.boxAsProp) return; // deleted box //TODO handle correctly
-        this.box = this.boxAsProp;
-        this.mode = "prop";
+        this.prop();
         // restore editBtn
         this.editBtn = this.editBtnAsProp;
     }
-
-    fullscreen() {
-        return;
-        let boxes = document.querySelector(".boxes");
-
-        // remove popup layer and blur effect
-        this.box.classList.remove("blurred");
-        boxes.classList.remove("blurred");
-        if(this.layer)
-            this.layer.remove();
-        
-        // remove other popups
-        //TODO change other popups to ontop boxes
-        for (let i = 1; i < this.boxmgr.popups.length-1; i++) {
-            const popupbox = this.boxmgr.popups[i];
-            popupbox.box.remove();
-            if(popupbox.layer)
-                popupbox.layer.remove();
-        }
-
-        boxes.removeChild(boxes.lastChild); //TODO change to ontop box
-        boxes.appendChild(this.box);
-        this.mode = "default"
+    
+    prop() {
+        this.box.remove();
+        if(!this.boxAsProp) return; // deleted box //TODO handle correctly
+        this.boxAsProp.classList.remove("selected");
+        this.box = this.boxAsProp;
+        this.mode = "prop";
     }
 
     activateDragAndDrop() {
@@ -490,6 +531,14 @@ export default class Box {
             }
     }
 
+    addEventToFullscreenButton(fullscBtn) {
+        fullscBtn.onclick =
+            (e) => {
+                e.stopPropagation();
+                this.fullscreen();
+            }
+    }
+
     addEventsToBox() {
         this.box.oncontextmenu =
             (e) => {
@@ -503,10 +552,23 @@ export default class Box {
                 e.stopPropagation();
                 if(this.boxmgr.menu.isVisible())
                     this.boxmgr.closeMenu();
-                else if(this.mode == "prop")
-                    this.popUp();
-                else if(this.mode == "popup")
-                    this.fullscreen();
+                else if(this.mode == "prop") {
+                    if(this.boxmgr.isFullscreen()) {
+                        this.boxmgr.getBox(this.box.parentNode).fullscreen(true);
+                        this.popUp(true);
+                        this.fullscreen();
+                    } else
+                        this.popUp();
+                }
+                else if(this.mode == "popup" && e.target.classList.contains("title"))
+                    {}//this.fullscreen();
+                else if(this.boxAsProp && this.boxmgr.getOwningBox(e.target).classList.contains("prop-box")) {
+                    this.boxmgr.getBox(this.boxAsProp.parentNode).fullscreen();
+                }
+                else if (this.mode == "default" && e.target.classList.contains("title"))
+                      this.ontop();
+                else if(this.mode == "ontop")
+                    this.default();
             };
     }
 
@@ -514,13 +576,24 @@ export default class Box {
         titleEl.onblur =
             (e) => {
                 if(e.relatedTarget && e.relatedTarget == this.editBtn) return;
+                if(!(e.relatedTarget && e.relatedTarget.classList && e.relatedTarget.classList.contains("editbtn"))) {
+                    // do nothing on related click //TODO not sure if click
+                    const donothing = (ee) => {
+                        ee.stopPropagation();
+                        ee.stopImmediatePropagation();
+                        document.removeEventListener("click", donothing, true);
+                    }
+                    document.addEventListener("click", donothing, true);
+                    // only with capture=true (3rd argument) handler interacts at capturing phase and
+                    // event can be stopped from propagate click events to children
+                }
                 this.stopEdit();
             };
 
         // notify saver
         titleEl.oninput =
             (e) => {
-                if(this.mode == "popup")
+                if(this.boxAsProp) // popup or default or ontop
                     this.boxAsProp.querySelector(".title").innerHTML = e.target.innerHTML;
                 this.changed();
             };

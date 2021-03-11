@@ -32,12 +32,12 @@ export default class {
         testBtn.classList.add("bm-btn");
         // this.menuEl.appendChild(testBtn);
         
-        let fullBtn = document.createElement("button");
-        this.fullBtn = fullBtn;
-        fullBtn.innerHTML = "&#x26F6;";
-        fullBtn.classList.add("bm-fullscbtn");
-        fullBtn.classList.add("bm-btn");
-        this.menuEl.appendChild(fullBtn);
+        // let fullBtn = document.createElement("button");
+        // this.fullBtn = fullBtn;
+        // fullBtn.innerHTML = "&#x26F6;";
+        // fullBtn.classList.add("bm-fullscbtn");
+        // fullBtn.classList.add("bm-btn");
+        // this.menuEl.appendChild(fullBtn);
 
         let delBtn   = document.createElement("button");
         this.delBtn = delBtn;
@@ -49,7 +49,7 @@ export default class {
     
     open(box) {
         this.addEventToTestButton(this.testBtn, box)
-        this.addEventToFullButton(this.fullBtn, box)
+        // this.addEventToFullButton(this.fullBtn, box)
         this.addEventToDelButton(this.delBtn, box)
         this.show(box);
     }
@@ -75,16 +75,15 @@ export default class {
             };
     }
 
-    addEventToFullButton(fullBtn, box) {
-        fullBtn.onclick =
-            (e) => {
-                if(box.mode == "prop")
-                    box.popUp();
-                else if(box.mode == "popup")
-                    box.fullscreen();
-                this.hide();
-            };
-    }
+    // addEventToFullButton(fullBtn, box) {
+    //     fullBtn.onclick =
+    //         (e) => {
+    //             e.stopPropagation();
+    //             box.popUp(true);
+    //             box.fullscreen();
+    //             this.hide();
+    //         };
+    // }
 
 
     show(box) {

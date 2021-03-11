@@ -5,14 +5,14 @@ import Saver from "./saver.js"
 export default class {
     constructor(collection) {
         this.allboxes   = new Map();
-        this.popups     = [{box: document.querySelector(".boxes")}];
         this.JSONcollectionData;
         this.shareid = collection.shareid;
-
-        this.saver = new Saver(collection, this);
-
-        this.menu  = new Boxmenu();
         
+        this.saver = new Saver(collection, this);
+        
+        this.menu  = new Boxmenu();
+        this._fullscreen = false;
+        this.resetPopups();
         // setInterval(() => {
         //     this.allboxes.forEach((value,key) => console.log(value));
         //     console.log("\n");
@@ -22,6 +22,10 @@ export default class {
     /*
     * gather and provide data
     */
+    get latestPopup() {
+        return this.popups[this.popups.length-1]
+    }
+
     addBox(box) {
         this.allboxes.set(box.id || box.tmpid, box)
     }
@@ -32,7 +36,7 @@ export default class {
     
     getBox(idOrEl) {
         if(idOrEl instanceof Element || idOrEl instanceof HTMLDocument) {
-            return this.getOwningBox(idOrEl)
+            return this.allboxes.get(this.getOwningBox(idOrEl).dataset.id)
         } else {
             let box = this.allboxes.get(idOrEl);
             if(!box)
@@ -62,19 +66,25 @@ export default class {
         while (el && el != document.body && !el.classList.contains("box")) {
             el = el.parentNode;
         }
-        if(el && el != document.body)
-            return this.getBox(el.dataset.id || el.dataset.tmpid) || {box: el}
-        else
-            return document.body
+        return el
     }
 
-    getPopupPath() {        
+    getPath() {        
         let ids = this.shareid+"/";
+        let boxes = document.querySelector(".boxes");
+        for (let i = 1; i < boxes.children.length; i++) {
+            const ontopbox = boxes.children[i];
+            ids += ontopbox.dataset.id+ ((i<boxes.children.length-1) ? "/" : "?full");
+        }
         for (let i = 1; i < this.popups.length; i++) {
             const popupbox = this.popups[i];
-            ids += popupbox.id+"/";
+            ids += popupbox.id + "/";
         }
         return ids;
+    }
+
+    resetPopups() {
+        this.popups = [{box: document.querySelector(".boxes")}];
     }
 
     /*
@@ -103,6 +113,10 @@ export default class {
         })
     }
 
+    isFullscreen() {
+        return this._fullscreen;
+    }
+
 
     /*
     * interaction
@@ -112,6 +126,42 @@ export default class {
     }
     closeMenu() {
         this.menu.hide();
+    }
+
+    addCloseFullscreenButton() {
+        this.closeFullscBtn = document.createElement("button");
+        this.closeFullscBtn.innerHTML = "&#x2338;";
+        this.closeFullscBtn.classList.add("closefullscbtn");
+        document.body.append(this.closeFullscBtn);
+        this.closeFullscBtn.onclick = () => this.closeFullscreen();
+    }
+
+    fullscreen() {
+        if(this._fullscreen) return;
+        this._fullscreen = true;
+        this.addCloseFullscreenButton();
+    }
+
+    closeFullscreen(nohistory = false) {
+        this.closeFullscBtn.remove();
+        let topopup = [];
+        for (let i = document.querySelector(".boxes").children.length-1; i >= 0; i--) {
+            const boxEl = document.querySelector(".boxes").children[i];
+            let box = this.getBox(boxEl);
+            if(i == 0)
+                box.default();
+            else {
+                box.prop();
+                topopup.push(box);
+            }
+        }
+        for (let i = topopup.length-1; i >= 0; i--) {
+            const box = topopup[i];
+            box.popUp(true);                        
+        }
+        this._fullscreen = false;
+        if(!nohistory)
+            history.pushState({}, "eab", "/"+this.getPath());
     }
 
     changeMode(box, mode) { /* changes box mode and mode of children */

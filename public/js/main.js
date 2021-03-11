@@ -70,24 +70,57 @@ function fetchCollection() {
 
 function openBoxesInPath() {
     let pathids = window.location.pathname.split("/");
-    if(pathids.length < 3) // path="/shareid"
+    let boxes  = document.querySelector(".boxes");
+
+    if(window.location.search=="?full") {
+        // reset popups        
         while (boxmgr.popups.length > 1)
-            boxmgr.popups[boxmgr.popups.length-1].popUpVanish(true);
+            boxmgr.latestPopup.popUpVanish(true);
 
-    for (let i = 2; i < pathids.length; i++) {
-        const id  = pathids[i];
-        // cut off different ids from popups (popupVanish)
-        while (boxmgr.popups.length > i-1 && boxmgr.popups[i-1].id != pathids[i])
-                boxmgr.popups[boxmgr.popups.length-1].popUpVanish(true);
-        
-        // trailing "/" -> id=""
-        if(!id) continue;
-        // popup[i-1] == path[i]
-        if(boxmgr.popups.length > i-1 && boxmgr.popups[i-1].id == id) continue;
+        if(pathids.length < 3) // path="/shareid"
+            while (boxes.children.length > 1)
+                boxmgr.getBox(boxes.lastChild.dataset.id).prop();
 
-        // open popups from pathids
-        boxmgr.getBox(id).popUp(true);
+        for (let i = 2; i < pathids.length+1; i++) { // +1 extra loop with id==""
+            const id  = pathids[i] || "";
+            // cut off different or additional ids (id=="")
+            while (boxes.children.length > i-1 && boxes.children[i-1].dataset.id != id)
+                boxmgr.getBox(boxes.lastChild.dataset.id).prop();
+            
+            // trailing "/" -> id=""
+            if(!id) continue;
+            if(boxes.children.length > i-1 && boxes.children[i-1].dataset.id == id) continue;
+
+            // open popups from pathids
+            let nextbox = boxmgr.getBox(id);
+            nextbox.popUp(true)
+            nextbox.fullscreen(true);
+        }
+    } else {
+        // reset boxes
+        if(boxmgr.isFullscreen())
+            boxmgr.closeFullscreen(true);
+
+        if(pathids.length < 3) // path="/shareid"
+            while (boxmgr.popups.length > 1)
+                boxmgr.latestPopup.popUpVanish(true);
+
+        for (let i = 2; i < pathids.length+1; i++) { // +1 extra loop with id==""
+            const id  = pathids[i] || "";
+            // cut off different additional ids (id=="") from popups (popupVanish)
+            while (boxmgr.popups.length > i-1 && boxmgr.popups[i-1].id != id)
+                    boxmgr.latestPopup.popUpVanish(true);
+            
+            // trailing "/" -> id=""
+            if(!id) continue;
+            if(boxmgr.popups.length > i-1 && boxmgr.popups[i-1].id == id) continue;
+
+            // open popups from pathids
+            boxmgr.getBox(id).popUp(true);
+        }
     }
+
+    
 }
 
 
