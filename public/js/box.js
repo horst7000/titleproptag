@@ -363,10 +363,12 @@ export default class Box {
         this.boxmgr.latestPopup.box.classList.add("blurred");
         
         // add in-between layer
-        this.layer = document.createElement("div");
-        this.layer.classList.add("layer");
+        if(!this.layer) {
+            this.layer = document.createElement("div");
+            this.layer.classList.add("layer");
+            this.layer.onclick = () => this.popUpVanish();
+        } 
         document.body.appendChild(this.layer);
-        this.layer.onclick = () => this.popUpVanish();
         
         // save box
         this.boxAsProp = this.box;
