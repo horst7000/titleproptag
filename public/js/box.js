@@ -350,6 +350,7 @@ export default class Box {
             this.boxmgr.getBox(boxes.children[i]).ontop();
         }
 
+        this.box.scrollIntoView();
 
         this.mode = "default"
         if(!nohistory)
