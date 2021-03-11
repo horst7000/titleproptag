@@ -75,7 +75,7 @@ p {
     top: 5%;
     left: 0;
     right: 0;
-    width: 86%;
+    width: 90%;
     margin: auto;
     min-height: 5rem;
     max-width: 70rem;
@@ -157,6 +157,8 @@ p {
     font-size: inherit;
     cursor: pointer;
     user-select: none;
+    word-break: break-word;
+    hyphens: auto;
 }
 .ontop-box > .title {        
     text-align: center;

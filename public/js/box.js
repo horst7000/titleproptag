@@ -52,8 +52,12 @@ export default class Box {
         return this.box.querySelector(".title");
     }
 
-    get title() {
+    get title() {            
         if(this.box)
+            // if(this.titleEl.children.length > 0) {
+            //     let math = MathJax.startup.document.getMathItemsWithin(this.titleEl)[0];
+            //     return math.start.delim + math.math + math.end.delim
+            // } else
             return this.titleEl.textContent;
         else
             return this.tmpid || this.id;
@@ -101,7 +105,8 @@ export default class Box {
     
     changed() {
         if(this.isVisible()) {
-            this.data.title = this.title;
+            if(!this.titleEl.querySelector(".MathJax"))
+                this.data.title = this.title;
             if(this.propContainer) {
                 let propids = [];
                 this.propEls.forEach((el)=>propids.push(el.dataset.id))
@@ -276,6 +281,10 @@ export default class Box {
     }
     
     startEdit() {
+        MathJax.startup.document.getMathItemsWithin([this.titleEl]).forEach(math => {
+            math.removeFromDocument(true);
+        });
+        console.log(MathJax.startup.document.getMathItemsWithin([this.titleEl]).length);
         this.titleEl.contentEditable    = "true";
         this.editBtn.style.transform    = "rotate(180deg) scale(1.6)";
         this.editBtn.style.transition   = "0.5s"
@@ -284,8 +293,6 @@ export default class Box {
         this.titleEl.focus();
         this.box.onclick = (e) => e.stopPropagation();
         this.box.oncontextmenu = (e) => e.stopPropagation();
-        // if(this.boxmgr.latestPopup.layer)
-        //     this.boxmgr.latestPopup.layer.onclick = (e) => e.stopPropagation();
     }
 
     stopEdit() {
@@ -293,7 +300,8 @@ export default class Box {
         this.titleEl.style.userSelect   = "none";
         this.titleEl.contentEditable    = "inherit";
         this.editBtn.style.transform    = "";
-        this.addEventsToBox();        
+        this.addEventsToBox();
+        MathJax.typeset();
     }
 
     focusTitle() {
@@ -401,6 +409,9 @@ export default class Box {
         // remove in-between layer
         this.layer.remove();
         
+        // clear unused MathItems from MathList in MathJax
+        MathJax.startup.document.clearMathItemsWithin([this.box]);
+
         // restore box        
         this.prop();
         // restore editBtn
@@ -492,6 +503,7 @@ export default class Box {
         }
         // load own content
         this.title = this.data.title;
+        MathJax.typeset && MathJax.typeset();
     }
 
     updateChildCounter(count = this.propEls.length) {

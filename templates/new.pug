@@ -9,6 +9,9 @@ html
         link(rel='icon' type='image/png' sizes='16x16' href='/img/favicon/favicon-16x16.png')
         link(rel='manifest' href='/img/favicon/site.webmanifest')
         //- link(href="https://fonts.googleapis.com/css2?family=Catamaran&display=swap" rel="stylesheet")
+        script.
+            MathJax = { options: { ignoreHtmlClass: 'json', processHtmlClass: 'title'}  };
+        script#MathJax-script(async='' src='https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js')
     body
         a#new(href='/') new
 
@@ -16,4 +19,5 @@ html
 
         script(type='module' src='/js/main.js')
         script(src='https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js')
+
             
