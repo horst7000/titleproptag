@@ -109,11 +109,13 @@ export default class Box {
                 this.data.props = propids;
             }
         }
-
+        this.checkForChildren();
         this.boxmgr.onBoxChange(this);
     }
 
     createBasicElements(container) {
+        // assume mode is unknown
+        // (set later in load content -> changing classes -> elements need to be created first)
         /*
         * containers
         */
@@ -480,6 +482,7 @@ export default class Box {
         this.createBasicElements(container);
         if(mode)
             this.mode = mode;
+        this.checkForChildren();
         if(this.mode == "default" || this.mode == "popup") {
             this.createDetailElements();
             // load childrens content
@@ -499,6 +502,21 @@ export default class Box {
         // load own content
         this.title = this.data.title;
         MathJax && MathJax.typeset && MathJax.typeset();
+    }
+
+    checkForChildren() {
+        if(this.data.props.length > 0) {
+            if(this.mode == "prop")
+                this.box.classList.add("has-children");
+            else if(this.boxAsProp)
+                this.boxAsProp.classList.add("has-children");
+        }
+        else {
+            if(this.mode == "prop")
+                this.box.classList.remove("has-children");
+            else if(this.boxAsProp)
+                this.boxAsProp.classList.remove("has-children");
+        }
     }
 
     updateChildCounter(count = this.propEls.length) {

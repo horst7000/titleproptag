@@ -86,9 +86,10 @@ p {
 .prop-box {
     display: inline-block;
     width: 48%;
-    margin: 2px;
+    margin: 3px;
     color: #044;
     background-color: #A7CDE7;
+    border-color: #0aa;
     font-weight: 600;
     font-size: 0.85rem;
     vertical-align: top;
@@ -99,6 +100,12 @@ p {
 }
 .prop-box.selected {
     background-color: #5cf;
+}
+.prop-box.has-children {
+    border-right-width: 3px;
+    border-bottom-width: 3px;
+    margin-right: 0px;
+    margin-bottom: 0px;
 }
 .point-box {
     border-top-color: transparent;
@@ -246,7 +253,7 @@ p {
 
 @media only screen and (min-width: 600px) {    
     .prop-box {
-        width: 32%;
+        width: 31%;
         max-width: 24rem;
     }
 }

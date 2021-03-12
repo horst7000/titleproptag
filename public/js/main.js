@@ -137,10 +137,11 @@ window.addEventListener('keydown', (e) => {
             const titleEl = e.target;
             const box     = boxmgr.getBox(titleEl)
 
-            if(box.mode != "point")
-                box.onAddButtonClick();
+            if(!titleEl.textContent) return;
+            if(box.mode == "prop")
+                boxmgr.getBox(box.box.parentNode).onAddButtonClick();
             else
-                boxmgr.getBox(box.box.parentNode).onAddButtonClick()                
+                box.onAddButtonClick();
         }
     }
 })
