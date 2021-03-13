@@ -60,11 +60,14 @@ p {
     font-size: 0.85rem;
     background-color: #345;    
 } */
-.default-box, .ontop-box {
+.default-box, .ontop-box, .popup-box {
     min-height: 5rem;
+    font-size: 1.2rem;
+    font-weight: 400;
+}
+.default-box, .ontop-box {
     margin: 9px;
     color: #02a2a2;
-    font-size: 1.16rem;
     background-color: #151d27;
 }
 .ontop-box {
@@ -77,29 +80,29 @@ p {
     right: 0;
     width: 90%;
     margin: auto;
-    min-height: 5rem;
     max-width: 70rem;
     color: #044;
-    font-size: 1.16rem;
-    background-color: #eefefe;
+    background-color: #dee;
 }
 .prop-box {
     display: inline-block;
-    width: 48%;
+    width: 47%;
     margin: 3px;
-    color: #044;
-    background-color: #A7CDE7;
-    border-color: #0aa;
-    font-weight: 600;
+    color: #ccc;
+    background-color: #193548;
+    border-color: #111;
+    font-weight: 400;
     font-size: 0.85rem;
     vertical-align: top;
 }
 .popup-box .prop-box {
-    color: #044;
-    background-color: #eee;
+    color: #eee;
+    background-color: #2c4b60;
 }
 .prop-box.selected {
-    background-color: #5cf;
+    background-color: #0bbbbb;
+    color: #06081e;
+    border-color: white;
 }
 .prop-box.has-children {
     border-right-width: 3px;
