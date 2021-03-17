@@ -14,12 +14,23 @@
     padding: 0;
 }
 
-.props {
-    min-height: 0;
+.sortable-quick, .sortable-quick.selected {
+    font-size: 0.5rem;
+    margin: 0;
+    border: none;
+    background-color: transparent;
+    color: #eee;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
 }
-.props.display-block {
-    border: 1px dashed turquoise;
-    min-height: 2.5rem;
-    display: block;
-    transition: all 1s ease-out;
+
+.sortable-quick > .btns {
+    display: none;
+}
+
+.sortable-quick > .title {
+    display: inline;
+    padding: 0;
 }

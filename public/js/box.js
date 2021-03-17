@@ -9,6 +9,28 @@ export default class Box {
             this.boxmgr.saveNow(this);
         }
         this.boxmgr.addBox(this);
+
+        this.elements = {
+            box: null,
+            titleEl: null,
+            propContainer: null,
+            editBtn: null,
+            fullscBtn: null,
+        }
+
+        this.propElements = {
+            box: null,
+            titleEl: null,
+            propContainer: null,
+            editBtn: null,
+        }
+
+        this.pointElements = {
+            box: null,
+            titleEl: null,
+            editBtn: null,
+        }
+
     }
 
     set id(id) {
@@ -63,18 +85,6 @@ export default class Box {
         this.titleEl.innerHTML = title
     }
 
-    get tagContainer() {
-        return this.box.querySelector(".tags")
-    }
-
-    get tagElements() {
-        let tags = this.propContainer;
-        if(tags)
-            return tags.childNodes;
-        else
-            return [];
-    }
-
     // get propContainer() {
     //     return this.box.querySelector(".props")
     // }
@@ -100,14 +110,10 @@ export default class Box {
     }
     
     changed() {
-        if(this.isVisible()) {
-            if(!this.titleEl.querySelector(".MathJax"))
-                this.data.title = this.title;
-            if(this.propContainer) {
-                let propids = [];
-                this.propEls.forEach((el)=>propids.push(el.dataset.id))
-                this.data.props = propids;
-            }
+        if(this.propContainer) {
+            let propids = [];
+            this.propEls.forEach((el)=>propids.push(el.dataset.id))
+            this.data.props = propids;
         }
         this.checkForChildren();
         this.boxmgr.onBoxChange(this);
@@ -116,89 +122,55 @@ export default class Box {
     createBasicElements(container) {
         // assume mode is unknown
         // (set later in load content -> changing classes -> elements need to be created first)
-        /*
-        * containers
-        */
-        this.box     = document.createElement("div");
-        this.box.classList.add("box");
-        container.appendChild(this.box);
-        if(this.id)
-            this.box.dataset.id = this.id;
-        this.addEventsToBox();
+
+        // box
+        this.box = this.boxmgr.factory.createBoxEl(this);
+
+        // title
+        this.box.appendChild(this.boxmgr.factory.createTitle(this));
         
-        let titleEl   = document.createElement("p");
-        titleEl.spellcheck = false;
-        titleEl.classList.add("title");
-        this.box.appendChild(titleEl);        
-        this.addEventsToTitle(titleEl)
+        // button container
+        this.btnContainer = this.boxmgr.factory.createBtnContainer(this);
+        this.box.appendChild(this.btnContainer);
 
-        let btnContainer = document.createElement("div");
-        this.btnContainer = btnContainer
-        btnContainer.classList.add("btns");
-        this.box.appendChild(btnContainer);
+        // edit button
+        this.editBtn = this.boxmgr.factory.createEditBtn(this);
+        this.btnContainer.appendChild(this.editBtn);
 
-        let menuBtn   = document.createElement("button");
-        menuBtn.innerHTML = "&#x22EE;";
-        menuBtn.classList.add("menubtn");
-        // btnContainer.appendChild(menuBtn);
-        this.addEventToMenuButton(menuBtn);
-     
-        let editBtn   = document.createElement("button");
-        this.editBtn  = editBtn;
-        editBtn.innerHTML = "&#x270E;";
-        editBtn.classList.add("editbtn");
-        btnContainer.appendChild(editBtn);
-        this.addEventToEditButton(editBtn);
+        // quick infos
+        // this.createQuickInfoContainers();
+
+        container.appendChild(this.box);
     }
 
     createDetailElements() {
-        /*
-        * containers
-        */
-        let tagContainer = document.createElement("div");
-        tagContainer.classList.add("tags");
-        this.box.insertBefore(tagContainer, this.btnContainer);
-        
-        let propContainer  = document.createElement("div"); 
-        this.propContainer = propContainer
-        propContainer.classList.add("props");
-        this.box.insertBefore(propContainer, this.btnContainer); // gets removed by "set mode" if mode=="point"
+        // prop container
+        this.propContainer = this.boxmgr.factory.createPropContainer(this);
+        this.box.insertBefore(this.propContainer, this.btnContainer);
 
-        let tag = document.createElement("span");
-        tag.classList.add("tag");
-        tag.innerText = "tag1";
-        this.tagContainer.appendChild(tag);
+        // add-prop button
+        this.addPropBtn = this.boxmgr.factory.createAddPropBtn(this);
+        this.btnContainer.appendChild(this.addPropBtn);
 
-        // add prop button
-        let addPropBtn = document.createElement("button");
-        this.addPropBtn = addPropBtn;
-        addPropBtn.innerText = "+";
-        addPropBtn.classList.add("btninsidebox");
-        addPropBtn.classList.add("addprop");
-        this.btnContainer.appendChild(addPropBtn);
-        this.addEventToAddButton(addPropBtn);
-        
         // fullscreen button
         if(this.mode == "popup") {
-            let fullscBtn  = document.createElement("button");
-            this.fullscBtn = fullscBtn
-            fullscBtn.innerHTML = "&#x26F6;";
-            fullscBtn.classList.add("btninsidebox");
-            fullscBtn.classList.add("fullscbtn");
-            this.btnContainer.appendChild(fullscBtn);
-            this.addEventToFullscreenButton(fullscBtn);
+            this.fullscBtn = this.boxmgr.factory.createFullscreenBtn(this);
+            this.btnContainer.appendChild(this.fullscBtn);
         }
-        
-        // child counter
-        let childCounter  = document.createElement("button");
-        this.childCounter = childCounter
-        childCounter.innerText = "+0";
-        childCounter.classList.add("childcounter");
-        childCounter.classList.add("hidden");
-        this.btnContainer.appendChild(childCounter);
-        childCounter.onclick = (e) => this.fullscreen();
+    }
 
-        this.activateDragAndDrop();
+    createQuickInfoContainers() {
+        this.quickInfoCons = this.boxmgr.factory.createQuickInfoContainers();
+        let clearEl1 = document.createElement("div");
+        clearEl1.style.clear = "both";
+        let clearEl2 = document.createElement("div");
+        clearEl2.style.clear = "both";
+        this.box.insertBefore(this.quickInfoCons[0], this.titleEl);        
+        this.box.insertBefore(this.quickInfoCons[1], this.titleEl);
+        this.box.insertBefore(clearEl1, this.titleEl);
+        this.box.insertBefore(this.quickInfoCons[2], this.btnContainer);        
+        this.box.insertBefore(this.quickInfoCons[3], this.btnContainer);
+        this.box.insertBefore(clearEl2, this.btnContainer);
     }
     
     // creates blank prop - ready to be filled
@@ -249,17 +221,6 @@ export default class Box {
 
     deselect() {
         this.box.classList.remove("selected");
-    }
-
-    highlight() {
-        let hashid = "#"+(this.id || this.tmpid)
-        // unset :target (css pseudoclass) so that
-        // it can be set again to same value with effect
-        if(window.location.hash == hashid)                    
-            window.location.hash = '';
-        setTimeout(() => {
-            window.location.hash = hashid;            
-        }, 1);
     }
 
     show() {
@@ -426,54 +387,12 @@ export default class Box {
         this.mode = "prop";
     }
 
-    activateDragAndDrop() {
-        new Sortable(this.box.querySelector(".props"), {
-            group: "box",
-            delay: 400,
-            animation: 400,
-            delayOnTouchOnly: true,
-            fallbackTolerance: 4,
-            //touchStartThreshold: 5,
-            dragClass: "sortable-drag",
-            chosenClass: "sortable-chosen",
-            ghostClass: "sortable-ghost",
-            swapThreshold: 0.07,
-            // direction: (this.mode == "prop") ? "vertical" : "horizontal",
-
-            onChoose: (ev) => { // as soon as delay ends
-                if(ev.originalEvent.pointerType != "mouse") {
-                    let box = this.boxmgr.getBox(ev.item.dataset.id);
-                    this.boxmgr.openMenu(box);
-                }
-            },
-            onStart: (ev) => {
-                this.boxmgr.closeMenu();
-                // this.boxmgr.prepareForDrop(ev);
-                // let draggedBox  = this.boxmgr.getOwningBox(ev.item);
-                // draggedBox.propContainer.classList.remove("display-block");
-            },
-            onEnd: (ev) => {
-                this.changed();
-                // this.boxmgr.onDropEnd();
-                // if(ev.from != ev.to) {
-                //     this.boxmgr.getOwningBox(ev.from).changed();
-                //     this.boxmgr.getOwningBox(ev.to).changed();
-                // } else if(ev.oldIndex != ev.newIndex) {
-                //     this.boxmgr.getOwningBox(ev.from).changed();
-                // }
-            },
-            onMove: (ev) => { // when element order has changed
-                // this.boxmgr.onDropEnd();          
-                // this.boxmgr.prepareForDrop(ev);
-                // let draggedBox  = this.boxmgr.getOwningBox(ev.dragged);
-                // let toBox       = this.boxmgr.getOwningBox(ev.to);
-                // this.boxmgr.changeMode(draggedBox, this.boxmgr.getSmallerModeName(toBox.mode));
-            },
-        });
-    }
 
     // convert properties to JSON
     asJSON() {
+        if(this.isVisible() && !this.titleEl.querySelector(".MathJax"))
+            this.data.title = this.title;
+        
         return this.data;
     }
 
@@ -539,39 +458,6 @@ export default class Box {
         newbox.focusTitle();
     }
 
-    addEventToAddButton(addProp) {
-        addProp.onclick =
-            (e) => {
-                this.onAddButtonClick(e);
-            };
-    }
-
-    addEventToMenuButton(menuBtn) {
-        // toggle button visibility
-        menuBtn.onclick =
-            (e) => {
-                if(this.boxmenu.isVisible())
-                    this.boxmenu.hide();
-                else
-                    this.boxmenu.show();
-            };
-    }
-
-    addEventToEditButton(editBtn) {
-        editBtn.onclick =
-            (e) => {
-                e.stopPropagation();
-                this.swapEdit();
-            }
-    }
-
-    addEventToFullscreenButton(fullscBtn) {
-        fullscBtn.onclick =
-            (e) => {
-                e.stopPropagation();
-                this.fullscreen();
-            }
-    }
 
     addEventsToBox() {
         this.box.oncontextmenu =
@@ -604,40 +490,6 @@ export default class Box {
                 else if(this.mode == "ontop")
                     this.default();
             };
-    }
-
-    addEventsToTitle(titleEl) {
-        titleEl.onblur =
-            (e) => {
-                if(e.relatedTarget && e.relatedTarget == this.editBtn) return;
-                if(!(e.relatedTarget && e.relatedTarget.classList && e.relatedTarget.classList.contains("editbtn"))) {
-                    // do nothing on related click //TODO not sure if click
-                    const donothing = (ee) => {
-                        ee.stopPropagation();
-                        ee.stopImmediatePropagation();
-                        document.removeEventListener("click", donothing, true);
-                    }
-                    document.addEventListener("click", donothing, true);
-                    // only with capture=true (3rd argument) handler interacts at capturing phase and
-                    // event can be stopped from propagate click events to children
-                }
-                this.stopEdit();
-            };
-
-        // notify saver
-        titleEl.oninput =
-            (e) => {
-                if(this.boxAsProp) // popup or default or ontop
-                    this.boxAsProp.querySelector(".title").innerHTML = e.target.innerHTML;
-                this.changed();
-            };
-
-        // prevent style from being inserted (paste) into title
-        titleEl.addEventListener('paste', function(e) {
-            e.preventDefault();
-            var text = e.clipboardData.getData("text/plain");
-            document.execCommand("insertHTML", false, text);
-        });
     }
 
 }

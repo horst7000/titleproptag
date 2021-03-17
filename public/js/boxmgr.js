@@ -1,4 +1,5 @@
 import Box from "./box.js"
+import BoxElementFactory from "./boxelementfactory.js";
 import Boxmenu from "./boxmenu.js";
 import Saver from "./saver.js"
 
@@ -10,7 +11,8 @@ export default class {
         
         this.saver = new Saver(collection, this);
         
-        this.menu  = new Boxmenu();
+        this.menu    = new Boxmenu();
+        this.factory = new BoxElementFactory(this);
         this._fullscreen = false;
         this.resetPopups();
 
@@ -60,7 +62,7 @@ export default class {
     }
 
     fetchGetBox(id) {     // insert new boxes
-        console.log("saving (insert boxes)...");
+        console.log("fetch get box");
         const options = { //for fetch
             method: 'GET'
         }

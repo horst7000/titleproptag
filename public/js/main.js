@@ -8,7 +8,7 @@ const requestedshareid  = paths[1];
 let collection          = {shareid: "", defaultboxid: ""};
 collection.shareid      = requestedshareid || Math.random().toString(36).substr(2,3);
 if(!requestedshareid)
-    history.pushState({}, collection.shareid, collection.shareid);
+    history.replaceState({}, collection.shareid, collection.shareid);
 
 const boxmgr                = new Boxmgr(collection);
 
