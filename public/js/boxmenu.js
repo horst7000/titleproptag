@@ -47,28 +47,26 @@ export default class {
         this.menuEl.appendChild(delBtn);
     }
     
-    open(box) {
+    open(box, boxEl) {
         this.addEventToTestButton(this.testBtn, box)
         // this.addEventToFullButton(this.fullBtn, box)
-        this.addEventToDelButton(this.delBtn, box)
-        this.show(box);
+        this.addEventToDelButton(this.delBtn, box, boxEl)
+        this.show(boxEl);
     }
 
     addEventToTestButton(delBtn, box) {
         delBtn.onclick =
             (e) => {
                 
-                box.box.style.transform = "translateY(-20px)"
-
                 this.hide();
             };
     }
 
-    addEventToDelButton(delBtn, box) {
+    addEventToDelButton(delBtn, box, boxEl) {
         delBtn.onclick =
             (e) => {
                 e.stopPropagation();
-                box.delete();
+                box.delete(boxEl);
                 // boxmenu doesnt hide on first delete click.
                 // It stays open and css class "deleted" hides all buttons
                 // except delbtn.
@@ -86,18 +84,16 @@ export default class {
     // }
 
 
-    show(box) {
-        box.box.insertBefore(this.menuEl, box.box.firstChild);
+    show(boxEl) {
+        boxEl.insertBefore(this.menuEl, boxEl.firstChild);
         let menuX = this.menuEl.getBoundingClientRect().x;
         if(menuX < 0)
             this.menuEl.style.right = menuX
-        // this.box.select();
     }
 
     hide() {
         if(this.isVisible()) {
             this.menuEl.parentNode.removeChild(this.menuEl);
-            // this.box.deselect();
         }
     }
 

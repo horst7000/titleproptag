@@ -41,10 +41,6 @@ export default class {
     addBox(box) {
         this.allboxes.set(box.id || box.tmpid, box)
     }
-
-    removeBox(id) {
-        this.allboxes.delete(id);
-    }
     
     getBox(idOrEl) {
         if(idOrEl instanceof Element || idOrEl instanceof HTMLDocument) {
@@ -133,8 +129,8 @@ export default class {
     /*
     * interaction
     */
-    openMenu(box) {
-        this.menu.open(box);
+    openMenu(box, boxEl) {
+        this.menu.open(box, boxEl);
     }
     closeMenu() {
         this.menu.hide();
@@ -178,48 +174,6 @@ export default class {
         this._fullscreen = false;
         if(!nohistory)
             history.pushState({}, "eab", "/"+this.getPath());
-    }
-
-    changeMode(box, mode) { /* changes box mode and mode of children */
-        box.mode = mode;
-        box.loadContent()
-        if(mode != "point") {
-            box.propEls.forEach(propBoxEl => {
-                let propBox = this.getBox(propBoxEl.dataset.id || propBoxEl.dataset.tmpid);
-                this.changeMode(propBox,this.getSmallerModeName(mode))
-            })
-        }
-    }
-
-    prepareForDrop(ev) {
-        let owningDefaultBox = ev.related ? this.getOwningBox(ev.related) : this.getOwningBox(ev.from);
-        let owningOntopBox;
-        let n = -1
-
-        if(owningDefaultBox.mode && owningDefaultBox.mode != "ontop") {
-            while(!owningDefaultBox.box.classList.contains("default-box"))
-                owningDefaultBox = this.getOwningBox(owningDefaultBox.box.parentNode);
-    
-            owningOntopBox = this.getOwningBox(owningDefaultBox.box.parentNode);
-            n = Array.prototype.indexOf.call(owningOntopBox.propEls, owningDefaultBox.box)
-        } else {
-            owningOntopBox = owningDefaultBox;
-            n = ev.newIndex || ev.oldIndex;
-        }
-
-        for (let i = 0; i < owningOntopBox.propEls.length; i++) {
-            const defaultBoxSibling = owningOntopBox.propEls[i];
-            if(i == n || i == n-1 || i == n+1)
-                defaultBoxSibling.querySelectorAll(".props").forEach((el) => {
-                    el.classList.add("display-block");
-                })
-        }
-    }
-    
-    onDropEnd() {
-        this.allboxes.forEach(box => {            
-            box.propContainer.classList.remove("display-block")            
-        });        
     }
 
 }

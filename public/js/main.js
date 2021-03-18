@@ -68,7 +68,7 @@ function fetchCollection() {
         });
 }
 
-function openBoxesInPath() {
+function openBoxesInPath() { //TODO refactor
     let pathids = window.location.pathname.split("/");
     let boxes  = document.querySelector(".boxes");
 

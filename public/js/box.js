@@ -13,16 +13,20 @@ export default class Box {
         this.elements = {
             box: null,
             titleEl: null,
-            propContainer: null,
             editBtn: null,
+            addPropBtn: null,
             fullscBtn: null,
+            propContainer: null,
+            collapsed: false,
         }
 
         this.propElements = {
             box: null,
             titleEl: null,
-            propContainer: null,
             editBtn: null,
+            addPropBtn: null,
+            propContainer: null,
+            collapsed: false,
         }
 
         this.pointElements = {
@@ -36,8 +40,12 @@ export default class Box {
     set id(id) {
         if(this.id && this.id == id) return;
         this.data._id = id;
-        if(this.isVisible())
-            this.box.dataset.id = id;
+        if(this.elements.box)
+            this.elements.box.dataset.id = id;
+        if(this.propElements.box)
+            this.propElements.box.dataset.id = id;
+        if(this.pointElements.box)
+            this.pointElements.box.dataset.id = id;
     }
 
     get id() {
@@ -61,21 +69,39 @@ export default class Box {
 
     set mode(mode) {
         //* CSS
-        if(this.mode) this.box.classList.remove(this.mode+"-box");
+        if(mode == "default" || mode == "popup") {
+            if(this.mode == "default" || this.mode == "popup")
+                this.elements.box.classList.remove(this.mode+"-box");
+            this.elements.box.classList.add(mode+"-box");
+        }
         this._mode = mode;
-        this.box.classList.add(this.mode+"-box");
     }
 
     get mode() {
         return this._mode;
     }
 
+    get activeEls() {
+        if(this.mode == "default" || this.mode == "popup")
+            return this.elements;
+        else if(this.mode == "prop")
+            return this.propElements;
+        else if(this.mode == "point")
+            return this.pointElements;
+        else return undefined;
+    }
+
+
+    get box () {
+        return this.elements.box;
+    }
+
     get titleEl() {
-        return this.box.querySelector(".title");
+        return this.activeEls.titleEl;
     }
 
     get title() {            
-        if(this.box)
+        if(this.mode)
             return this.titleEl.textContent;
         else
             return this.tmpid || this.id;
@@ -85,12 +111,12 @@ export default class Box {
         this.titleEl.innerHTML = title
     }
 
-    // get propContainer() {
-    //     return this.box.querySelector(".props")
-    // }
+    get editBtn() {
+        return this.activeEls.editBtn;
+    }
 
     get propEls() {
-        let pCon = this.propContainer;
+        let pCon = this.elements.propContainer;
         let pEls = [];
         for (let i = 0; i < pCon.childNodes.length; i++) {
             // if(pCon.childNodes[i].classList.contains("box"))
@@ -98,19 +124,9 @@ export default class Box {
         }
         return pEls;
     }
-
-    isVisible() {
-        //return (this.box.offsetHeight != 0 && this.box.offsetWidth != 0)
-        return !!(this.box)
-    }
-
-    contains(id) {
-        // id == this.id    return true/false?
-        return !!(this.box.querySelector("[data-id='"+id+"']") || this.box.querySelector("[data-tmpid='"+id+"']"))
-    }
     
     changed() {
-        if(this.propContainer) {
+        if(this.elements.propContainer) {
             let propids = [];
             this.propEls.forEach((el)=>propids.push(el.dataset.id))
             this.data.props = propids;
@@ -119,58 +135,82 @@ export default class Box {
         this.boxmgr.onBoxChange(this);
     }
 
-    createBasicElements(container) {
-        // assume mode is unknown
-        // (set later in load content -> changing classes -> elements need to be created first)
-
+    createBasicElements(container, elements=this.elements) {
         // box
-        this.box = this.boxmgr.factory.createBoxEl(this);
-
+        this.boxmgr.factory.createBoxEl(this, elements);
         // title
-        this.box.appendChild(this.boxmgr.factory.createTitle(this));
-        
-        // button container
-        this.btnContainer = this.boxmgr.factory.createBtnContainer(this);
-        this.box.appendChild(this.btnContainer);
-
+        this.boxmgr.factory.createTitle(this, elements);        
         // edit button
-        this.editBtn = this.boxmgr.factory.createEditBtn(this);
-        this.btnContainer.appendChild(this.editBtn);
-
-        // quick infos
-        // this.createQuickInfoContainers();
-
-        container.appendChild(this.box);
+        this.boxmgr.factory.createEditBtn(this, elements);
     }
 
-    createDetailElements() {
+    createBoxAsDefault(container) {
+        // box, titleEl, editBtn
+        this.createBasicElements(container, this.elements);
+        this.elements.box.classList.add("default-box");
+
         // prop container
-        this.propContainer = this.boxmgr.factory.createPropContainer(this);
-        this.box.insertBefore(this.propContainer, this.btnContainer);
+        this.boxmgr.factory.createPropContainer(this, this.elements);
 
         // add-prop button
-        this.addPropBtn = this.boxmgr.factory.createAddPropBtn(this);
-        this.btnContainer.appendChild(this.addPropBtn);
+        this.boxmgr.factory.createAddPropBtn(this, this.elements);
+        
+        // quick infos
+        // this.createQuickInfoContainers(this.elements);
+        // this.quickInfoCons = this.elements.quickInfoCons;
+
+        container.appendChild(this.elements.box);
+    }
+
+    createBoxAsPopup(container) {
+        // box, titleEl, editBtn
+        this.createBasicElements(container, this.elements);
+        this.elements.box.classList.add("popup-box");
+
+        // prop container
+        this.boxmgr.factory.createPropContainer(this, this.elements);
+
+        // add-prop button
+        this.boxmgr.factory.createAddPropBtn(this, this.elements);
 
         // fullscreen button
-        if(this.mode == "popup") {
-            this.fullscBtn = this.boxmgr.factory.createFullscreenBtn(this);
-            this.btnContainer.appendChild(this.fullscBtn);
-        }
+        this.boxmgr.factory.createFullscreenBtn(this, this.elements);      
+
+        // add in-between layer
+        if(!this.layer) {
+            this.layer = document.createElement("div");
+            this.layer.classList.add("layer");
+            this.layer.onclick = () => this.popUpVanish();
+        } 
+        document.body.appendChild(this.layer);
+        document.body.appendChild(this.elements.box);
+    }
+
+    createBoxAsProp(container) {
+        // box, titleEl, editBtn
+        this.createBasicElements(container, this.propElements);
+        this.propElements.box.classList.add("prop-box");
+
+        container.appendChild(this.propElements.box);
+    }
+
+    createBoxAsPoint(container) {
+        
     }
 
     createQuickInfoContainers() {
-        this.quickInfoCons = this.boxmgr.factory.createQuickInfoContainers();
+        this.boxmgr.factory.createQuickInfoContainers(elements);
         let clearEl1 = document.createElement("div");
         clearEl1.style.clear = "both";
         let clearEl2 = document.createElement("div");
         clearEl2.style.clear = "both";
-        this.box.insertBefore(this.quickInfoCons[0], this.titleEl);        
-        this.box.insertBefore(this.quickInfoCons[1], this.titleEl);
-        this.box.insertBefore(clearEl1, this.titleEl);
-        this.box.insertBefore(this.quickInfoCons[2], this.btnContainer);        
-        this.box.insertBefore(this.quickInfoCons[3], this.btnContainer);
-        this.box.insertBefore(clearEl2, this.btnContainer);
+        elements.box.insertBefore(elements.quickInfoCons[0], elements.titleEl);        
+        elements.box.insertBefore(elements.quickInfoCons[1], elements.titleEl);
+        elements.box.insertBefore(clearEl1, elements.titleEl);
+        const nextSibling = elements.titleEl.nextSibling;
+        elements.box.insertBefore(elements.quickInfoCons[2], nextSibling);        
+        elements.box.insertBefore(elements.quickInfoCons[3], nextSibling);
+        elements.box.insertBefore(clearEl2, nextSibling);
     }
     
     // creates blank prop - ready to be filled
@@ -179,7 +219,7 @@ export default class Box {
             return;
 
         let newbox = new Box({in: this.id || this.tmpid}, this.boxmgr);
-        newbox.loadContent(this.propContainer, "prop");
+        newbox.loadContent(this.elements.propContainer, "prop");
         return newbox;
     }
 
@@ -188,113 +228,119 @@ export default class Box {
         this.changed();
     }
         
-    delete() {
-        if(this.box.classList.contains("deleted")) { // delete (final)
-            let oldparent = this.boxmgr.getBox(this.box.parentNode);
-            this.box.parentNode.removeChild(this.box);
+    delete(boxEl) {
+        const elements = this.elements.box == boxEl ? this.elements :
+            this.propElements.box == boxEl ? this.propElements : this.pointElements;
+
+        if(boxEl.classList.contains("deleted")) { // delete (final)
+            let oldparent = this.boxmgr.getBox(this.data.in);
+            oldparent.elements.propContainer.removeChild(this.propElements.box);
+            boxEl.remove();
             oldparent.changed();
         } else { 
-            this.box.classList.add("deleted"); // delete (restorable)
+            boxEl.classList.add("deleted"); // delete (restorable)
             let tmptitle = this.title;
             this.title = "↺ wiederherstellen";
-            this.titleEl.contentEditable = false;
+            elements.titleEl.contentEditable = false;
             this.boxmgr.closeMenu();
             let delbtn = document.createElement("button");
             delbtn.innerHTML = "&times;";
             delbtn.classList.add("delbtn");
-            delbtn.onclick = () => this.delete();
-            this.box.appendChild(delbtn);
+            delbtn.onclick = () => this.delete(boxEl);
+            boxEl.appendChild(delbtn);
 
-            this.box.onclick = (e) => { // restore
+            boxEl.onclick = (e) => { // restore
                 e.stopPropagation();
-                this.box.classList.remove("deleted");
+                boxEl.classList.remove("deleted");
                 this.title = tmptitle;
-                this.addEventsToBox(this.titleEl); // resets this.titleEl.onclick
+                this.boxmgr.factory.addEventsToBox(boxEl, this);
                 delbtn.remove();
             };
         }
     }
 
     select() {
-        this.box.classList.add("selected");
+        this.propElements.box.classList.add("selected");
     }
 
     deselect() {
-        this.box.classList.remove("selected");
+        this.propElements.box.classList.remove("selected");
     }
 
-    show() {
-        this.box.classList.remove("hidden")
-    }
-
-    hide() {
-        this.box.classList.add("hidden")
-    }
-
-    swapEdit() {
-        if(this.titleEl.contentEditable != "true") {
-            this.startEdit();
+    swapEdit(elements) {
+        if(elements.titleEl.contentEditable != "true") {
+            this.startEdit(elements);
         } else {
-            this.stopEdit();
+            this.stopEdit(elements);
         }
     }
     
-    startEdit() {
-        MathJax.startup.document.getMathItemsWithin([this.titleEl]).forEach(math => {
+    startEdit(elements) {
+        MathJax.startup.document.getMathItemsWithin([elements.titleEl]).forEach(math => {
             math.removeFromDocument(true);
         });
-        this.titleEl.contentEditable    = "true";
-        this.editBtn.style.transform    = "rotate(180deg) scale(1.6)";
-        this.editBtn.style.transition   = "0.5s"
-        this.titleEl.style.cursor       = "auto";
-        this.titleEl.style.userSelect   = "inherit";
-        this.titleEl.focus();
-        this.box.onclick = (e) => e.stopPropagation();
-        this.box.oncontextmenu = (e) => e.stopPropagation();
+        elements.titleEl.contentEditable    = "true";
+        elements.editBtn.style.transform    = "rotate(180deg) scale(1.6)";
+        elements.editBtn.style.transition   = "0.5s"
+        elements.titleEl.style.cursor       = "auto";
+        elements.titleEl.style.userSelect   = "inherit";
+        // set selection (cursor) to end   (includes focus)
+        let range       = document.createRange(); // a range is a like the selection but invisible
+        range.selectNodeContents(elements.titleEl); // select the entire contents with the range
+        range.collapse(false); // collapse the range to the end point (false)
+        let selection   = window.getSelection();
+        selection.removeAllRanges(); 
+        selection.addRange(range); // set previous range as new selection
+
+        elements.box.onclick = (e) => e.stopPropagation();
+        elements.box.oncontextmenu = (e) => e.stopPropagation();
     }
 
-    stopEdit() {
-        this.titleEl.style.cursor       = "pointer";
-        this.titleEl.style.userSelect   = "none";
-        this.titleEl.contentEditable    = "inherit";
-        this.editBtn.style.transform    = "";
-        this.addEventsToBox();
+    stopEdit(elements) {
+        elements.titleEl.style.cursor       = "pointer";
+        elements.titleEl.style.userSelect   = "none";
+        // messing up the focus of other editable element in firefox -> setTimeout needed
+        setTimeout(()=>elements.titleEl.removeAttribute("contentEditable"),1);
+        elements.editBtn.style.transform    = "";
+        this.boxmgr.factory.addEventsToBox(elements.box, this);
         MathJax.typeset();
-    }
-
-    focusTitle() {
-        this.swapEdit();
-    }
-
-    ontop() {
-        // assume box was "default"
-        this.propContainer.classList.add("hidden");
-        this.btnContainer.classList.add("hidden"); 
-        this.box.style.minHeight = "1rem";
-        this.mode = "ontop";
     }
 
     default() {
         if(this.mode == "popup") {
-            this.box.classList.remove("blurred");
+            this.elements.box.classList.remove("blurred");
             this.layer.remove();
-            this.boxAsProp.classList.add("selected");
+            this.propElements.box.classList.add("selected");
             document.querySelector(".boxes").appendChild(this.box);
-            this.box.querySelector(".fullscbtn").remove();
-            this.box.style.top = "";
-        } else if(this.mode == "ontop") {
-            this.propContainer.classList.remove("hidden");
-            this.btnContainer.classList.remove("hidden"); 
-            this.box.style.minHeight = "";
+            this.elements.box.querySelector(".fullscbtn").remove();
+            this.elements.box.style.top = "";
+        } else if(this.elements.collapsed) {
+            this.expandDefault();
         }
         this.mode = "default";
+    }
+
+    collapseDefault() {
+        this.elements.propContainer.classList.add("hidden");
+        this.elements.editBtn.classList.add("hidden"); 
+        this.elements.addPropBtn.classList.add("hidden"); 
+        this.elements.box.style.minHeight = "1rem";
+        this.elements.collapsed = true;
+    }
+
+    expandDefault() {
+        this.elements.propContainer.classList.remove("hidden");
+        this.elements.editBtn.classList.remove("hidden"); 
+        this.elements.addPropBtn.classList.remove("hidden"); 
+        this.elements.box.style.minHeight = "";
+        this.elements.collapsed = false;
     }
 
     fullscreen(nohistory = false) {
         // assume box is "popup" or "default" or "ontop"
         let boxes = document.querySelector(".boxes");
 
-        if(this.mode == "default" || this.mode == "ontop") {
+        if(this.mode == "default") {
             let i = boxes.children.length-1;
             while(boxes.children[i] != this.box) {
                 this.boxmgr.getBox(boxes.children[i]).prop();
@@ -313,10 +359,10 @@ export default class Box {
 
         // default to ontop
         for (let i = 0; i < boxes.children.length-2; i++) {
-            this.boxmgr.getBox(boxes.children[i]).ontop();
+            this.boxmgr.getBox(boxes.children[i]).collapseDefault();
         }
 
-        this.box.scrollIntoView();
+        this.elements.box.scrollIntoView();
 
         this.mode = "default"
         if(!nohistory)
@@ -328,26 +374,13 @@ export default class Box {
         // add blur effect
         this.boxmgr.latestPopup.box.classList.add("blurred");
         
-        // add in-between layer
-        if(!this.layer) {
-            this.layer = document.createElement("div");
-            this.layer.classList.add("layer");
-            this.layer.onclick = () => this.popUpVanish();
-        } 
-        document.body.appendChild(this.layer);
-        
-        // save box
-        this.boxAsProp = this.box;
-        // save editBtn
-        this.editBtnAsProp = this.editBtn;
-        
         // remove defaultbox fullscreenbutton
         this.boxmgr.fullscBtn.remove();
 
         // create second box
         this.loadContent(document.body, "popup");
         // move down a bit
-        this.box.style.top = 1+1.5*this.boxmgr.popups.length+"rem"
+        this.elements.box.style.top = 1+1.5*this.boxmgr.popups.length+"rem"
                 
         // history
         this.boxmgr.popups.push(this);
@@ -372,25 +405,23 @@ export default class Box {
 
         // restore box        
         this.prop();
-        // restore editBtn
-        this.editBtn = this.editBtnAsProp;
         
         // add defaultbox fullscreenbutton
         this.boxmgr.popups.length == 1 && this.boxmgr.addFullscreenButton();
     }
     
     prop() {
-        this.box.remove();
-        if(!this.boxAsProp) return; // deleted box //TODO handle correctly
-        this.boxAsProp.classList.remove("selected");
-        this.box = this.boxAsProp;
+        this.elements.box.remove();
+        if(!this.propElements.box) return; // deleted box //TODO handle correctly
+        this.propElements.box.classList.remove("selected");
         this.mode = "prop";
     }
 
 
     // convert properties to JSON
     asJSON() {
-        if(this.isVisible() && !this.titleEl.querySelector(".MathJax"))
+        // note: new boxes are saved immediately to get an id -> no titleEl
+        if(this.mode && !this.titleEl.querySelector(".MathJax"))
             this.data.title = this.title;
         
         return this.data;
@@ -398,12 +429,19 @@ export default class Box {
 
     // creates new elements, loads and sets title and loads props into propContainer
     loadContent(container, mode = this.mode || "default") { //TODO other name for function
-        this.createBasicElements(container);
-        if(mode)
-            this.mode = mode;
+        if(mode == "default")
+            this.createBoxAsDefault(container);
+        else if (mode == "popup")
+            this.createBoxAsPopup(container);
+        else if (mode == "prop")
+            this.createBoxAsProp(container);
+        else if (mode == "point")
+            this.createBoxAsPoint(container);
+
+        this.mode = mode;
+
         this.checkForChildren();
         if(this.mode == "default" || this.mode == "popup") {
-            this.createDetailElements();
             // load childrens content
             let filterprops = false;
             this.data.props.forEach(propid => {
@@ -413,7 +451,7 @@ export default class Box {
                     filterprops = true;
                 } else
                     propbox = this.boxmgr.getBox(propid);
-                propbox.loadContent(this.propContainer, "prop");
+                propbox.loadContent(this.elements.propContainer, "prop");
             });
             if(filterprops) // remove for old propids ("props":["_tmpid123"])
                 this.data.props = this.data.props.filter(propid => propid[0] != "_");
@@ -424,18 +462,11 @@ export default class Box {
     }
 
     checkForChildren() {
-        if(this.data.props.length > 0) {
-            if(this.mode == "prop")
-                this.box.classList.add("has-children");
-            else if(this.boxAsProp)
-                this.boxAsProp.classList.add("has-children");
-        }
-        else {
-            if(this.mode == "prop")
-                this.box.classList.remove("has-children");
-            else if(this.boxAsProp)
-                this.boxAsProp.classList.remove("has-children");
-        }
+        if(!this.propElements.box) return;
+        if(this.data.props.length > 0) 
+            this.propElements.box.classList.add("has-children");
+        else    
+            this.propElements.box.classList.remove("has-children");
     }
 
     updateChildCounter(count = this.propEls.length) {
@@ -455,41 +486,7 @@ export default class Box {
     */
     onAddButtonClick(e) {      
         let newbox = this.createNewProp();
-        newbox.focusTitle();
-    }
-
-
-    addEventsToBox() {
-        this.box.oncontextmenu =
-            (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                this.boxmgr.openMenu(this);
-            };
-            
-        this.box.onclick =
-            (e) => {
-                e.stopPropagation();
-                if(this.boxmgr.menu.isVisible())
-                    this.boxmgr.closeMenu();
-                else if(this.mode == "prop") {
-                    if(this.boxmgr.isFullscreen()) {
-                        this.boxmgr.getBox(this.box.parentNode).fullscreen(true);
-                        this.popUp(true);
-                        this.fullscreen();
-                    } else
-                        this.popUp();
-                }
-                else if(this.mode == "popup" && e.target.classList.contains("title"))
-                    {}//this.fullscreen();
-                else if(this.boxAsProp && this.boxmgr.getOwningBox(e.target).classList.contains("prop-box")) {
-                    this.boxmgr.getBox(this.boxAsProp.parentNode).fullscreen();
-                }
-                else if (this.mode == "default" && e.target.classList.contains("title"))
-                      this.ontop();
-                else if(this.mode == "ontop")
-                    this.default();
-            };
+        newbox.swapEdit(newbox.propElements);
     }
 
 }

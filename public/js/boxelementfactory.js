@@ -3,38 +3,38 @@ export default class BoxElementFactory {
         this.boxmgr = boxmgr;
     }
 
-    createBoxEl(box) {
+    createBoxEl(box, elements) {
         let boxEl = document.createElement("div");
         boxEl.classList.add("box");
         if(box.id)
             boxEl.dataset.id = box.id;
         this.addEventsToBox(boxEl, box);
+        elements.box = boxEl;
         return boxEl;
     }
 
-    createTitle(box) {
+    createTitle(box, elements) {
         let titleEl   = document.createElement("p");
         titleEl.spellcheck = false;
         titleEl.classList.add("title");
-        this.addEventsToTitle(titleEl, box);
+        this.addEventsToTitle(titleEl, box, elements);
+        elements.titleEl = titleEl;
+        elements.box.appendChild(titleEl);
         return titleEl;
     }
 
-    createBtnContainer(box) {
-        let btnContainer = document.createElement("div");
-        btnContainer.classList.add("btns");
-        return btnContainer;
-    }
-
-    createEditBtn(box) {
+    createEditBtn(box, elements) {
         let editBtn   = document.createElement("button");
         editBtn.innerHTML = "&#x270E;";
+        editBtn.classList.add("btninsidebox");
         editBtn.classList.add("editbtn");
-        this.addEventToEditButton(editBtn, box);
+        this.addEventToEditButton(editBtn, box, elements);
+        elements.editBtn = editBtn;
+        elements.box.appendChild(editBtn);
         return editBtn;
     }
 
-    createQuickInfoContainers() {
+    createQuickInfoContainers(elements) {
         let quickInfoCons = [];
         quickInfoCons.push(document.createElement("div"));
         quickInfoCons.push(document.createElement("div"));
@@ -65,31 +65,38 @@ export default class BoxElementFactory {
             group: {name: "box", pull: false},
             ghostClass: "sortable-quick",
         });
+        elements.quickInfoCons = quickInfoCons;
         return quickInfoCons;
     }
 
-    createPropContainer(box) {
+    createPropContainer(box, elements) {
         let propContainer  = document.createElement("div"); 
         propContainer.classList.add("props");
         this.activateDragAndDrop(propContainer, box);
+        elements.propContainer = propContainer;
+        elements.box.appendChild(propContainer);
         return propContainer;
     }
 
-    createAddPropBtn(box) {
+    createAddPropBtn(box, elements) {
         let addPropBtn = document.createElement("button");
         addPropBtn.innerText = "+";
         addPropBtn.classList.add("btninsidebox");
         addPropBtn.classList.add("addprop");
         this.addEventToAddButton(addPropBtn, box);
+        elements.addPropBtn = addPropBtn;
+        elements.box.appendChild(addPropBtn);
         return addPropBtn;
     }
 
-    createFullscreenBtn(box) {
+    createFullscreenBtn(box, elements) {
         let fullscBtn  = document.createElement("button");
         fullscBtn.innerHTML = "&#x26F6;";
         fullscBtn.classList.add("btninsidebox");
         fullscBtn.classList.add("fullscbtn");
         this.addEventToFullscreenButton(fullscBtn, box);
+        elements.fullscBtn = fullscBtn;
+        elements.box.appendChild(fullscBtn);
         return fullscBtn;
     }
 
@@ -109,7 +116,7 @@ export default class BoxElementFactory {
             (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                this.boxmgr.openMenu(this);
+                this.boxmgr.openMenu(box, boxEl);
             };
             
         boxEl.onclick =
@@ -127,20 +134,20 @@ export default class BoxElementFactory {
                 }
                 else if(box.mode == "popup" && e.target.classList.contains("title"))
                     {}
-                else if(box.boxAsProp && this.boxmgr.getOwningBox(e.target).classList.contains("prop-box")) {
-                    this.boxmgr.getBox(box.boxAsProp.parentNode).fullscreen();
+                else if(box.mode == "default" && boxEl.classList.contains("prop-box")) {
+                    this.boxmgr.getBox(box.propElements.box.parentNode).fullscreen();
                 }
-                else if (box.mode == "default" && e.target.classList.contains("title"))
-                    box.ontop();
-                else if(box.mode == "ontop")
-                    box.default();
+                else if (box.mode == "default" && e.target.classList.contains("title") && !box.elements.collapsed)
+                    box.collapseDefault();
+                else if(box.elements.collapsed)
+                    box.expandDefault();
             };
     }
 
-    addEventsToTitle(titleEl, box) {
+    addEventsToTitle(titleEl, box, elements) {
         titleEl.onblur =
             (e) => {
-                if(e.relatedTarget && e.relatedTarget == box.editBtn) return;
+                if(e.relatedTarget && e.relatedTarget == elements.editBtn) return;
                 if(!(e.relatedTarget && e.relatedTarget.classList && e.relatedTarget.classList.contains("editbtn"))) {
                     // do nothing on related click //TODO not sure if click
                     const donothing = (ee) => {
@@ -152,14 +159,15 @@ export default class BoxElementFactory {
                     // only with capture=true (3rd argument) handler interacts at capturing phase and
                     // event can be stopped from propagate click events to children
                 }
-                box.stopEdit();
+                box.stopEdit(elements);
+                console.log("stopedit");
             };
 
         // notify saver
         titleEl.oninput =
             (e) => {
-                if(box.boxAsProp) // popup or default or ontop
-                    box.boxAsProp.querySelector(".title").innerHTML = e.target.innerHTML;
+                if((box.mode == "default" || box.mode == "popup") && box.propElements.box) // popup or default or ontop
+                    box.propElements.titleEl.innerHTML = e.target.innerHTML;
                 box.changed();
             };
 
@@ -171,11 +179,11 @@ export default class BoxElementFactory {
         });
     }
 
-    addEventToEditButton(editBtn, box) {
+    addEventToEditButton(editBtn, box, elements) {
         editBtn.onclick =
             (e) => {
                 e.stopPropagation();
-                box.swapEdit();
+                box.swapEdit(elements);
             }
     }
 
@@ -194,10 +202,10 @@ export default class BoxElementFactory {
             // direction: (box.mode == "prop") ? "vertical" : "horizontal",
 
             onChoose: (ev) => { // as soon as delay ends
-                if(ev.originalEvent.pointerType != "mouse") {
-                    const box = this.boxmgr.getBox(ev.item.dataset.id);
-                    this.boxmgr.openMenu(box);
-                }                
+                // if(ev.originalEvent.pointerType != "mouse") {
+                //     const box = this.boxmgr.getBox(ev.item.dataset.id);
+                //     this.boxmgr.openMenu(box, ev.item);
+                // }                
             },
             onStart: (ev) => {
                 this.boxmgr.closeMenu();
