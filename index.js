@@ -98,6 +98,7 @@ app.route('/api/collection/:shareid')
 app.route('/api/box/')
     .post( (req, res) => {
         const data = req.body;
+        //TODO data.in not relevant
         dbBoxes.insert(data, (err, newdoc) => {
             // console.log(newdoc);
             res.json(newdoc);

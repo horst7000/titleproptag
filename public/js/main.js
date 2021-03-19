@@ -139,7 +139,7 @@ window.addEventListener('keydown', (e) => {
 
             if(!titleEl.textContent) return;
             if(box.mode == "prop")
-                boxmgr.getBox(box.box.parentNode).onAddButtonClick();
+                boxmgr.getBox(box.data.in).onAddButtonClick();
             else
                 box.onAddButtonClick();
         }

@@ -447,10 +447,11 @@ export default class Box {
             this.data.props.forEach(propid => {
                 let propbox;
                 if(propid[0] == "_") { // support for old versions ("props":["_tmpid123"])
-                    propbox     = new Box({in: this.id, tmpid: propid}, this.boxmgr)
+                    propbox     = new Box({tmpid: propid}, this.boxmgr)
                     filterprops = true;
                 } else
                     propbox = this.boxmgr.getBox(propid);
+                propbox.data.in = this.id;
                 propbox.loadContent(this.elements.propContainer, "prop");
             });
             if(filterprops) // remove for old propids ("props":["_tmpid123"])
