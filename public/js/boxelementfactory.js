@@ -166,8 +166,12 @@ export default class BoxElementFactory {
         // notify saver
         titleEl.oninput =
             (e) => {
-                if((box.mode == "default" || box.mode == "popup") && box.propElements.box) // popup or default or ontop
-                    box.propElements.titleEl.innerHTML = e.target.innerHTML;
+                if(box.mode == "default" || box.mode == "popup") {
+                    if(titleEl == box.elements.titleEl && box.propElements.box) // default title changed -> update prop
+                        box.propElements.titleEl.innerHTML = e.target.innerHTML;
+                    else if(titleEl == box.propElements.titleEl) // prop title changed -> update default
+                        box.elements.titleEl.innerHTML = e.target.innerHTML;
+                }
                 box.changed();
             };
 
