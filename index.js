@@ -19,22 +19,13 @@ dbCollections.ensureIndex({ fieldName: "shareid", unique: true})
 dbBoxes.loadDatabase();
 
 // routing
-const BOT_PATTERNS_REGEX = /Googlebot|bingbot|Slurp|DuckDuckBot/gm;
+const BOT_PATTERNS_REGEX = /Googlebot|bingbot|Slurp|DuckDuckBot|YandexBot|Sosospider|/gm;
 
 app.route('/').get( (req, res) =>  {
-//         res.render('new');
-// {"title":"Einkaufsliste","props":[{"name":"Obst & Gemüse","boxids":["WG1PVsLeyKGPOrlM","aEI9CTZd7Abz0vVC"]},{"name":"Anderes","boxids":["48KmEFXfVTLYQzrA"]}],"shareid":"defa0bfc","_id":"LIJ65A1cEZVZ3zRf"}
-// {"title":"Bäume","props":[],"shareid":"defa0bfc","_id":"66DndEdcTfV6pdCS"}
-        
-        if(BOT_PATTERNS_REGEX.exec(req.headers['user-agent'])!= null) { // its a bot
-            let doc = [
-                {"title":"Einkaufsliste","props":[{"name":"Obst & Gemüse","boxids":["",""]},{"name":"Anderes","boxids":[""]}]},
-                {"title":"Bäume","props":[]}
-                ];
-            res.render('index_static', {doc: doc});
-        }
-        else
-            res.render('new');
+        itsabot(req, res, [
+            {"title":"everything","props":["",""]},
+            {"title":"is a box","props":[]}
+        ])  ||  res.render('new');
     }
 );
 
@@ -43,7 +34,7 @@ app.route(['/:shareid/','/:shareid/*']).get( (req, res) =>  {
             if(coldoc) {
                 dbBoxes.find({shareid: req.params.shareid}, (err,boxdoc) => {
                     if(boxdoc)
-                        res.render('old', {collection: coldoc, boxes: boxdoc});
+                        itsabot(req, res, boxdoc) || res.render('old', {collection: coldoc, boxes: boxdoc});
                     else
                         res.redirect('/');
                 });
@@ -54,17 +45,13 @@ app.route(['/:shareid/','/:shareid/*']).get( (req, res) =>  {
     }
 );
 
-// app.route('/:shareid/:title').get( (req, res) =>  {
-//     dbBoxes.find({shareid: req.params.shareid, title: req.params.title}, (err, doc) => {
-//         if(doc.length == 0) 
-//             res.redirect('/:shareid');
-//         else
-//             res.render('index', {doc: doc});
-//     });
-//     }
-// );
-
-
+function itsabot(req, res, doc) {
+    if(BOT_PATTERNS_REGEX.exec(req.headers['user-agent'])!= null) { // its a bot
+        res.render('index_static', {doc: doc});
+        return true;
+    } else
+        return false;    
+}
 
 
 /*
