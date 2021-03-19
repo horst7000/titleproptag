@@ -6,7 +6,7 @@ const paths             = window.location.pathname.split("/");
 const requestedshareid  = paths[1];
 
 let collection          = {shareid: "", defaultboxid: ""};
-collection.shareid      = requestedshareid || Math.random().toString(36).substr(2,3);
+collection.shareid      = requestedshareid || Math.random().toString(36).substr(2,4);
 if(!requestedshareid)
     history.replaceState({}, collection.shareid, collection.shareid);
 

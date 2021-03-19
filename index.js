@@ -19,7 +19,7 @@ dbCollections.ensureIndex({ fieldName: "shareid", unique: true})
 dbBoxes.loadDatabase();
 
 // routing
-const BOT_PATTERNS_REGEX = /Googlebot|bingbot|Slurp|DuckDuckBot|YandexBot|Sosospider|/gm;
+const BOT_PATTERNS_REGEX = /Googlebot|bingbot|Slurp|DuckDuckBot|YandexBot|Sosospider/gm;
 
 app.route('/').get( (req, res) =>  {
         itsabot(req, res, [
