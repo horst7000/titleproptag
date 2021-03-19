@@ -6,8 +6,7 @@ import Saver from "./saver.js"
 export default class {
     constructor(collection) {
         this.allboxes   = new Map();
-        this.JSONcollectionData;
-        this.shareid = collection.shareid;
+        this.collection = collection;
         
         this.saver = new Saver(collection, this);
         
@@ -24,11 +23,6 @@ export default class {
         this.closeFullscBtn.innerHTML = "&#x2338;";
         this.closeFullscBtn.classList.add("closefullscbtn");
         this.addFullscreenButton();
-        
-        // setInterval(() => {
-        //     this.allboxes.forEach((value,key) => console.log(value));
-        //     console.log("\n");
-        // }, 3000);
     }
 
     /*
@@ -53,10 +47,6 @@ export default class {
         }
     }
     
-    requestCollectionData() {
-        return this.JSONcollectionData;
-    }
-
     fetchGetBox(id) {     // insert new boxes
         console.log("fetch get box");
         const options = { //for fetch
@@ -78,7 +68,7 @@ export default class {
     }
 
     getPath() {        
-        let ids = this.shareid+"/";
+        let ids = this.collection.shareid+"/";
         let boxes = document.querySelector(".boxes");
         for (let i = 1; i < boxes.children.length; i++) {
             const ontopbox = boxes.children[i];
@@ -130,7 +120,8 @@ export default class {
     * interaction
     */
     openMenu(box, boxEl) {
-        this.menu.open(box, boxEl);
+        if(box.id != this.collection.defaultboxid)
+            this.menu.open(box, boxEl);
     }
     closeMenu() {
         this.menu.hide();

@@ -1,23 +1,5 @@
 html
     head
-        title everythingsabox
-        meta(name='viewport' content='width=device-width, initial-scale=1')
-        link(rel='stylesheet' type='text/css' href='/css/myy.css')
-        link(rel='stylesheet' type='text/css' href='/css/dragdrop.css')
-        link(rel='apple-touch-icon' sizes='180x180' href='/img/favicon/apple-touch-icon.png')
-        link(rel='icon' type='image/png' sizes='32x32' href='/img/favicon/favicon-32x32.png')
-        link(rel='icon' type='image/png' sizes='16x16' href='/img/favicon/favicon-16x16.png')
-        link(rel='manifest' href='/img/favicon/site.webmanifest')
-        //- link(href="https://fonts.googleapis.com/css2?family=Catamaran&display=swap" rel="stylesheet")
-        script.
-            MathJax = { options: { ignoreHtmlClass: 'json', processHtmlClass: 'title'}  };
-        script#MathJax-script(async='' src='https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js')
-    body
-        a#new(href='/') new
-
-        div.boxes            
-
-        script(type='module' src='/js/main.js')
-        script(src='https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js')
-
-            
+        include includes/head.pug
+    body        
+        include includes/site.pug

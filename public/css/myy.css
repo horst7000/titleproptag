@@ -37,6 +37,10 @@ p {
     background-color: #133;
 } */
 
+#contact {
+    float: right;
+}
+
 .hidden, .tags {
     display: none !important;
 }

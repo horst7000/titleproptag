@@ -21,12 +21,29 @@ dbBoxes.loadDatabase();
 // routing
 const BOT_PATTERNS_REGEX = /Googlebot|bingbot|Slurp|DuckDuckBot|YandexBot|Sosospider/gm;
 
+function itsabot(req, res, doc) {
+    if(BOT_PATTERNS_REGEX.exec(req.headers['user-agent'])!= null) { // its a bot
+        res.render('index_static', {doc: doc});
+        return true;
+    } else
+        return false;    
+}
+
 app.route('/').get( (req, res) =>  {
         itsabot(req, res, [
             {"title":"everything","props":["",""]},
             {"title":"is a box","props":[]}
         ])  ||  res.render('new');
     }
+);
+
+app.route('/contact/').get( (req, res) =>  {
+        res.render('index_static', {doc: [
+            {"title":"everything is a box","props":["",""]},
+            {"title":"124horst@gmail.com","props":[]},
+            {"title":"Martin Gäbele, 52062 Aachen","props":[]}        
+        ]});
+    }
 );
 
 app.route(['/:shareid/','/:shareid/*']).get( (req, res) =>  {
@@ -45,13 +62,7 @@ app.route(['/:shareid/','/:shareid/*']).get( (req, res) =>  {
     }
 );
 
-function itsabot(req, res, doc) {
-    if(BOT_PATTERNS_REGEX.exec(req.headers['user-agent'])!= null) { // its a bot
-        res.render('index_static', {doc: doc});
-        return true;
-    } else
-        return false;    
-}
+
 
 
 /*
@@ -60,34 +71,28 @@ function itsabot(req, res, doc) {
 *
 */
 app.route('/api/collection/:shareid')
-    .get( (req, res) =>  {
-        if(req.params.shareid.length != 3)
-            res.sendStatus(403);
+    // .get( (req, res) =>  {
+    //     if(req.params.shareid.length != 3)
+    //         res.sendStatus(403);
         
-        dbCollections.findOne({shareid: req.params.shareid}, (err, doc) => {
-            if(doc)
-                res.send(doc);
-            else
-                res.sendStatus(404);
-        });
-    })
+    //     dbCollections.findOne({shareid: req.params.shareid}, (err, doc) => {
+    //         if(doc)
+    //             res.send(doc);
+    //         else
+    //             res.sendStatus(404);
+    //     });
+    // })
     .put( (req, res) =>  {
-        if(req.params.shareid.length != 3)
+        if(req.params.shareid.length != 4)
             res.sendStatus(403);
-        else
+        else {
             res.sendStatus(200);
-            
-        data = req.body;
-        // dbBoxes.find({tmpid: {$in : data.boxids}},(err, doc) => {
-            // doc.forEach(box => {
-            //     let i = data.boxids.indexOf(box.tmpid);
-            //     data.boxids[i] = box._id;
-            // })
+            data = req.body;        
             dbCollections.update({shareid: req.params.shareid},
                 {$set: {defaultboxid : data.defaultboxid}}, {upsert:true}, (err, doc) => {
     
             });
-        // });
+        }
     })
 
 app.route('/api/box/')
