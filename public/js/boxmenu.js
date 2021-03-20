@@ -39,6 +39,13 @@ export default class {
         // fullBtn.classList.add("bm-btn");
         // this.menuEl.appendChild(fullBtn);
 
+        let secBtn  = document.createElement("button");
+        this.secBtn = secBtn;
+        secBtn.innerHTML = "---";
+        secBtn.classList.add("bm-secbtn");
+        secBtn.classList.add("bm-btn");
+        this.menuEl.appendChild(secBtn);
+
         let delBtn   = document.createElement("button");
         this.delBtn = delBtn;
         delBtn.innerHTML = "&times;";
@@ -51,6 +58,7 @@ export default class {
         this.addEventToTestButton(this.testBtn, box)
         // this.addEventToFullButton(this.fullBtn, box)
         this.addEventToDelButton(this.delBtn, box, boxEl)
+        this.addEventToSecButton(this.secBtn, box)
         this.show(boxEl);
     }
 
@@ -70,6 +78,15 @@ export default class {
                 // boxmenu doesnt hide on first delete click.
                 // It stays open and css class "deleted" hides all buttons
                 // except delbtn.
+            };
+    }
+
+    addEventToSecButton(secBtn, box) {
+        secBtn.onclick =
+            (e) => {
+                e.stopPropagation();
+                box.onAddSectionClick();
+                this.hide();
             };
     }
 

@@ -131,7 +131,7 @@ export default class {
                             oldbox.replacetmpid(resbox._id);
                             // if box is new prop add id to parent
                             if(oldbox.data.in)
-                                this.boxmgr.getBox(oldbox.data.in).addProp(oldbox);
+                                this.boxmgr.getBox(oldbox.data.in).addPropId(resbox._id);
                         }
                     });
                 });

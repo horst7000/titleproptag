@@ -64,25 +64,15 @@ p {
     /* transition: max-width 0.3s ease-in-out */
     transition: min-height 0.3s cubic-bezier(0.075, 0.82, 0.165, 1);
 }
-/* .ontop-box {
-    max-width: 1024px;
-    margin: 0 auto 2px auto;
-    color: #999;
-    font-size: 0.85rem;
-    background-color: #345;    
-} */
-.default-box, .ontop-box, .popup-box {
+.default-box, .popup-box {
     min-height: 5rem;
     font-size: 1.2rem;
     font-weight: 400;
 }
-.default-box, .ontop-box {
+.default-box {
     margin: 9px;
     color: #02a2a2;
     background-color: #151d27;
-}
-.ontop-box {
-    font-size: 0.9rem;
 }
 .popup-box {
     position: absolute;
@@ -148,7 +138,6 @@ p {
 /** DELETED */
 .deleted.box {
     color: #aaa;
-    font-size: 0.8rem;
     background-color: #411;
 }
 /*TODO MOVE TO JAVASCRIPT INLINE CSS*/
@@ -165,11 +154,6 @@ p {
     color: #aaa;
 }
 
-/** BOXMENU */
-.bm-btn {
-    padding: 0 16px;
-    opacity: 1;
-}
 
 /** TITLE */
 .title {
@@ -180,9 +164,6 @@ p {
     user-select: none;
     word-break: break-word;
     hyphens: auto;
-}
-.ontop-box > .title {        
-    text-align: center;
 }
 .default-box > .title, .popup-box > .title {
     text-align: center;
@@ -219,7 +200,7 @@ p {
     right: -2px;
     top: -4px;
 }
-.boxmenu{
+.boxmenu{ 
     position: absolute;
     top: -24px;
     right: 0px; 
@@ -260,6 +241,29 @@ p {
     height: 100vh;
     background-color: black;
     opacity: 0.08;
+}
+
+.section-box {    
+    text-align: center;
+    border: none;
+    opacity: 0.5;
+    font-size: 0.6em;
+    font-weight: 600;
+}
+
+.section-box > .title {
+    display: inline-block;
+    cursor: unset;
+}
+
+.section-box > hr {
+    opacity: 0.2;
+    margin-bottom: -0.2em;
+    width: 96%;
+}
+
+.section-box > .editbtn {
+    position: unset;
 }
 
 .quick-info {

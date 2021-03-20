@@ -78,6 +78,11 @@ export default class BoxElementFactory {
         return propContainer;
     }
 
+    createDivider(box, elements) {
+        let sectionDivider = document.createElement("hr");
+        elements.box.insertBefore(sectionDivider, elements.box.firstChild);
+    }
+
     createAddPropBtn(box, elements) {
         let addPropBtn = document.createElement("button");
         addPropBtn.innerText = "+";
@@ -160,7 +165,6 @@ export default class BoxElementFactory {
                     // event can be stopped from propagate click events to children
                 }
                 box.stopEdit(elements);
-                console.log("stopedit");
             };
 
         // notify saver

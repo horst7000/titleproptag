@@ -3,12 +3,6 @@ export default class Box {
         this.data       = data || {};
         this.data.title = this.data.title || "";
         this.boxmgr     = boxmgr;
-        if(!this.id) {
-            this.data.tmpid = this.data.tmpid || randomId();
-            this.data.props = [];
-            this.boxmgr.saveNow(this);
-        }
-        this.boxmgr.addBox(this);
 
         this.elements = {
             box: null,
@@ -35,6 +29,13 @@ export default class Box {
             editBtn: null,
         }
 
+        // save box
+        if(!this.id) {
+            this.data.tmpid = this.data.tmpid || randomId();
+            this.data.props = [];
+            this.boxmgr.saveNow(this);
+        }
+        this.boxmgr.addBox(this);
     }
 
     set id(id) {
@@ -86,7 +87,7 @@ export default class Box {
             return this.elements;
         else if(this.mode == "prop")
             return this.propElements;
-        else if(this.mode == "point")
+        else if(this.mode == "point" || this.mode == "section")
             return this.pointElements;
         else return undefined;
     }
@@ -135,7 +136,7 @@ export default class Box {
         this.boxmgr.onBoxChange(this);
     }
 
-    createBasicElements(container, elements=this.elements) {
+    createBasicElements(elements=this.elements) {
         // box
         this.boxmgr.factory.createBoxEl(this, elements);
         // title
@@ -146,7 +147,7 @@ export default class Box {
 
     createBoxAsDefault(container) {
         // box, titleEl, editBtn
-        this.createBasicElements(container, this.elements);
+        this.createBasicElements(this.elements);
         this.elements.box.classList.add("default-box");
 
         // prop container
@@ -162,9 +163,9 @@ export default class Box {
         container.appendChild(this.elements.box);
     }
 
-    createBoxAsPopup(container) {
+    createBoxAsPopup() { // uses defaultElements (=elements)
         // box, titleEl, editBtn
-        this.createBasicElements(container, this.elements);
+        this.createBasicElements(this.elements);
         this.elements.box.classList.add("popup-box");
 
         // prop container
@@ -188,7 +189,7 @@ export default class Box {
 
     createBoxAsProp(container) {
         // box, titleEl, editBtn
-        this.createBasicElements(container, this.propElements);
+        this.createBasicElements(this.propElements);
         this.propElements.box.classList.add("prop-box");
 
         container.appendChild(this.propElements.box);
@@ -196,6 +197,14 @@ export default class Box {
 
     createBoxAsPoint(container) {
         
+    }
+
+    createBoxAsSection(container) { // uses pointElements
+        this.createBasicElements(this.pointElements);
+        this.boxmgr.factory.createDivider(this, this.pointElements);
+        this.pointElements.box.classList.add("section-box");
+
+        container.appendChild(this.pointElements.box);
     }
 
     createQuickInfoContainers() {
@@ -213,28 +222,34 @@ export default class Box {
         elements.box.insertBefore(clearEl2, nextSibling);
     }
     
-    // creates blank prop - ready to be filled
-    createNewProp() {
+    // creates blank prop. Parent change gets called after api response
+    createNewProp(mode = "prop") {
         if(this.mode == "point")
             return;
 
-        let newbox = new Box({in: this.id || this.tmpid}, this.boxmgr);
-        newbox.loadContent(this.elements.propContainer, "prop");
+        let newbox = {};
+        if(mode == "prop") {
+            newbox = new Box({in: this.id || this.tmpid}, this.boxmgr);
+        } else if (mode == "section") {
+            newbox = new Box({in: this.id, title: "section", issection: true}, this.boxmgr);
+        }
+        newbox.loadContent(this.elements.propContainer, mode);
         return newbox;
-    }
+    }    
 
-    addProp(box) {
-        this.data.props.push(box.id);
+    addPropId(id) {
+        this.data.props.push(id);
         this.changed();
     }
-        
+
     delete(boxEl) {
         const elements = this.elements.box == boxEl ? this.elements :
             this.propElements.box == boxEl ? this.propElements : this.pointElements;
 
         if(boxEl.classList.contains("deleted")) { // delete (final)
-            let oldparent = this.boxmgr.getBox(this.data.in);
-            oldparent.elements.propContainer.removeChild(this.propElements.box);
+            let oldparent = this.boxmgr.getBox(this.data.in);            
+            if(this.mode == "default" || this.mode == "ontop") // if box exists twice on different levels
+                oldparent.elements.propContainer.removeChild(this.propElements.box);
             boxEl.remove();
             oldparent.changed();
         } else { 
@@ -297,8 +312,8 @@ export default class Box {
     }
 
     stopEdit(elements) {
-        elements.titleEl.style.cursor       = "pointer";
-        elements.titleEl.style.userSelect   = "none";
+        elements.titleEl.style.cursor       = "";
+        elements.titleEl.style.userSelect   = "";
         // messing up the focus of other editable element in firefox -> setTimeout needed
         setTimeout(()=>elements.titleEl.removeAttribute("contentEditable"),1);
         elements.editBtn.style.transform    = "";
@@ -437,6 +452,8 @@ export default class Box {
             this.createBoxAsProp(container);
         else if (mode == "point")
             this.createBoxAsPoint(container);
+        else if (mode == "section")
+            this.createBoxAsSection(container);
 
         this.mode = mode;
 
@@ -452,7 +469,7 @@ export default class Box {
                 } else
                     propbox = this.boxmgr.getBox(propid);
                 propbox.data.in = this.id;
-                propbox.loadContent(this.elements.propContainer, "prop");
+                propbox.loadContent(this.elements.propContainer, propbox.data.issection ? "section" : "prop");
             });
             if(filterprops) // remove for old propids ("props":["_tmpid123"])
                 this.data.props = this.data.props.filter(propid => propid[0] != "_");
@@ -488,6 +505,13 @@ export default class Box {
     onAddButtonClick(e) {      
         let newbox = this.createNewProp();
         newbox.swapEdit(newbox.propElements);
+    }
+
+    onAddSectionClick(e) {      
+        if(this.mode == "default" || this.mode == "popup")
+            this.createNewProp("section");
+        else
+            this.boxmgr.getBox(this.data.in).onAddSectionClick();
     }
 
 }
