@@ -1,20 +1,14 @@
-.sortable-drag {
-    padding: 4px;
+.sort-drag {
     /* opacity: ~0.8 /*<- set automatically*/
+    opacity: 0 !important;
 }
-.sortable-chosen { /* placeholder indicates where item will be dropped. starts as soon as delay is over */
-    opacity: 0.3;
-    transition: unset;
+.sort-chosen { /* placeholder indicates where item will be dropped. starts as soon as delay is over */
+    opacity: 0.6;
     /* padding: 4px; */
-    background-color: #17a59a;
-    transform: translate(-2px, -2px);
-}
-.sortable-ghost { /* placeholder indicates where item will be dropped. starts as soon as item is moved */
-    opacity: 0.3;    
-    padding: 0;
+    /* background-color: #17a59a; */
 }
 
-.sortable-quick, .sortable-quick.selected {
+.sort-quick, .sort-quick.selected {
     font-size: 0.5rem;
     margin: 0;
     border: none;
@@ -26,11 +20,11 @@
     width: 100%;
 }
 
-.sortable-quick > .btns {
+.sort-quick > .btns {
     display: none;
 }
 
-.sortable-quick > .title {
+.sort-quick > .title {
     display: inline;
     padding: 0;
 }

@@ -51,19 +51,19 @@ export default class BoxElementFactory {
         
         new Sortable(quickInfoCons[0], {
             group: {name: "box", pull: false},
-            ghostClass: "sortable-quick",
+            ghostClass: "sort-quick",
         });
         new Sortable(quickInfoCons[1], {
             group: {name: "box", pull: false},
-            ghostClass: "sortable-quick",
+            ghostClass: "sort-quick",
         });
         new Sortable(quickInfoCons[2], {
             group: {name: "box", pull: false},
-            ghostClass: "sortable-quick",
+            ghostClass: "sort-quick",
         });
         new Sortable(quickInfoCons[3], {
             group: {name: "box", pull: false},
-            ghostClass: "sortable-quick",
+            ghostClass: "sort-quick",
         });
         elements.quickInfoCons = quickInfoCons;
         return quickInfoCons;
@@ -203,9 +203,9 @@ export default class BoxElementFactory {
             delayOnTouchOnly: true,
             fallbackTolerance: 4,
             //touchStartThreshold: 5,
-            dragClass: "hidden",
-            // chosenClass: "sortable-chosen",
-            // ghostClass: "sortable-ghost",
+            dragClass: "sort-drag",
+            chosenClass: "sort-chosen",
+            // ghostClass: "sort-ghost",
             swapThreshold: 0.07,
             // direction: (box.mode == "prop") ? "vertical" : "horizontal",
 
